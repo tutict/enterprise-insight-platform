@@ -1,0 +1,18 @@
+server:
+  port: 8102
+
+spring:
+  application:
+    name: metadata-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:localhost:8848}
+      config:
+        server-addr: ${NACOS_ADDR:localhost:8848}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

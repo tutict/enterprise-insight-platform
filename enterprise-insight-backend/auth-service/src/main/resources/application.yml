@@ -1,0 +1,23 @@
+﻿server:
+  port: 8101
+
+spring:
+  application:
+    name: auth-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:localhost:8848}
+      config:
+        server-addr: ${NACOS_ADDR:localhost:8848}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:change-me-to-a-32-byte-minimum-secret}
+    ttl-seconds: 3600
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

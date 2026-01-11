@@ -1,0 +1,42 @@
+﻿server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:localhost:8848}
+      config:
+        server-addr: ${NACOS_ADDR:localhost:8848}
+    gateway:
+      default-filters:
+        - AddResponseHeader=X-Platform, Enterprise-Insight
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+        - id: metadata-service
+          uri: lb://metadata-service
+          predicates:
+            - Path=/api/metadata/**
+        - id: analysis-service
+          uri: lb://analysis-service
+          predicates:
+            - Path=/api/analysis/**
+        - id: ai-service
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/ai/**
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:change-me-to-a-32-byte-minimum-secret}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

@@ -1,0 +1,27 @@
+services:
+  nacos:
+    image: nacos/nacos-server:v2.3.2
+    container_name: eip-nacos
+    environment:
+      - MODE=standalone
+      - JVM_XMS=256m
+      - JVM_XMX=256m
+    ports:
+      - "8848:8848"
+
+  mysql:
+    image: mysql:8.0
+    container_name: eip-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root1234
+      - MYSQL_DATABASE=eip
+      - TZ=Asia/Shanghai
+    ports:
+      - "3306:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  redis:
+    image: redis:7.2
+    container_name: eip-redis
+    ports:
+      - "6379:6379"

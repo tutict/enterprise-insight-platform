@@ -1,0 +1,26 @@
+﻿server:
+  port: 8103
+
+spring:
+  application:
+    name: analysis-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:localhost:8848}
+      config:
+        server-addr: ${NACOS_ADDR:localhost:8848}
+    openfeign:
+      circuitbreaker:
+        enabled: true
+      client:
+        config:
+          default:
+            connectTimeout: 2000
+            readTimeout: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

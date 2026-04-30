@@ -1,4 +1,4 @@
-﻿package com.tutict.eip.auth;
+package com.tutict.eip.auth;
 
 import com.tutict.eip.common.ApiResponse;
 import com.tutict.eip.common.security.JwtUtils;
@@ -33,7 +33,6 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    // 模拟登录：根据用户名分配角色并签发 JWT
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         List<String> roles = request.username().equalsIgnoreCase("admin")
                 ? List.of(RoleConstants.ADMIN, RoleConstants.ANALYST)
@@ -45,18 +44,17 @@ public class AuthController {
     }
 
     @GetMapping("/profile")
-    // 模拟用户画像：用于前端展示角色与租户
     public ApiResponse<UserProfile> profile(@RequestParam(defaultValue = "demo") String username) {
         UserProfile profile = new UserProfile(username, List.of(RoleConstants.ADMIN, RoleConstants.ANALYST), "demo-tenant");
         return ApiResponse.ok(profile);
     }
 
-    // 登录请求 DTO
-    public record LoginRequest(@NotBlank String username, @NotBlank String password) {}
+    public record LoginRequest(@NotBlank String username, @NotBlank String password) {
+    }
 
-    // 登录响应 DTO
-    public record LoginResponse(String token, Instant expiresAt, List<String> roles) {}
+    public record LoginResponse(String token, Instant expiresAt, List<String> roles) {
+    }
 
-    // 用户画像 DTO
-    public record UserProfile(String username, List<String> roles, String tenant) {}
+    public record UserProfile(String username, List<String> roles, String tenant) {
+    }
 }

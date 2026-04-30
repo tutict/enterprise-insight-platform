@@ -1,4 +1,4 @@
-﻿package com.tutict.eip.common;
+package com.tutict.eip.common;
 
 public final class ErrorCodes {
     public static final String OK = "0";

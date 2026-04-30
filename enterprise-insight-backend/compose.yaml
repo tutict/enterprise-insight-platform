@@ -25,3 +25,23 @@ services:
     container_name: eip-redis
     ports:
       - "6379:6379"
+
+  qdrant:
+    image: qdrant/qdrant:v1.9.3
+    container_name: eip-qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+  ollama:
+    image: ollama/ollama:0.5.7
+    container_name: eip-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_storage:/root/.ollama
+
+volumes:
+  qdrant_storage:
+  ollama_storage:

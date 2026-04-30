@@ -1,4 +1,4 @@
-﻿package com.tutict.eip.common.security;
+package com.tutict.eip.common.security;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

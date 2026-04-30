@@ -1,0 +1,12 @@
+server:
+  port: 8088
+
+agent:
+  ollama:
+    base-url: http://localhost:11434
+    model: llama3.1
+    request-timeout: 2m
+    max-retries: 2
+    retry-backoff: 1s
+    verification-timeout: 3m
+    output-root: ./agent-output

@@ -1,4 +1,4 @@
-﻿package com.tutict.eip.gateway.security;
+package com.tutict.eip.gateway.security;
 
 import com.tutict.eip.common.security.JwtClaims;
 import com.tutict.eip.common.security.JwtUtils;
@@ -19,19 +19,18 @@ import java.util.Map;
 @Component
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
-    // 公共路径无需鉴权
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/auth/login",
             "/actuator/health",
             "/actuator/info"
     );
 
-    // 基于路径的 RBAC 规则（MVP）
     private static final Map<String, List<String>> ROLE_RULES = Map.of(
-            "/api/metadata/sources", List.of(RoleConstants.ADMIN),
-            "/api/metadata/datasets", List.of(RoleConstants.ANALYST),
-            "/api/analysis/metrics", List.of(RoleConstants.ANALYST),
-            "/api/analysis/datasets", List.of(RoleConstants.ANALYST),
+            "/api/metadata/templates", List.of(RoleConstants.ANALYST),
+            "/api/metadata/agents", List.of(RoleConstants.ANALYST),
+            "/api/prompt-compiler", List.of(RoleConstants.ANALYST),
+            "/api/agent-adapter", List.of(RoleConstants.ANALYST),
+            "/api/harness", List.of(RoleConstants.ANALYST),
             "/api/ai", List.of(RoleConstants.ANALYST)
     );
 
@@ -52,7 +51,6 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        // 解析 Bearer Token
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return unauthorized(exchange);
@@ -66,12 +64,10 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             return unauthorized(exchange);
         }
 
-        // 网关层 RBAC 校验
         if (!isAllowed(path, claims.roles())) {
             return forbidden(exchange);
         }
 
-        // 将用户上下文透传给下游服务
         String rolesHeader = claims.roles() == null ? "" : String.join(",", claims.roles());
         ServerWebExchange mutated = exchange.mutate()
                 .request(builder -> builder

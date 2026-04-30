@@ -1,99 +1,355 @@
-# 企业智能数据分析 & AI 助手平台（简历 MVP）
+# AI Harness Compiler
 
-一个可直接用于简历展示的企业级数据分析与 AI 助手平台 MVP。
+AI Harness Compiler is an engineering-oriented AI platform that converts software requirements into structured DSL, compiles the DSL into stable Harness Prompts, and drives local or remote Agents to generate, verify, and repair code.
 
-## 架构
-- Spring Cloud Alibaba 微服务（Nacos 注册/配置中心）
-- API 网关（Spring Cloud Gateway）
-- JWT 鉴权 + RBAC（网关规则 + 服务内方法级校验）
-- Garfish 微前端（主应用 + 子应用）
-- Mock AI Agent 接口便于快速演示
+The project focuses on engineering-grade AI code generation. It separates user intent, DSL structure, prompt compilation, local agent execution, verification, and automatic repair into explicit modules.
 
-## 后端模块
-- `gateway-service`：API 网关与统一路由
-- `auth-service`：登录与 JWT 签发
-- `metadata-service`：数据集与数据源
-- `analysis-service`：指标卡片 + Feign 调用
-- `ai-service`：Mock AI Agent
-- `common`：公共响应、错误码、权限注解等
+## Architecture
 
-## 技术栈
+```text
+User Requirement
+      |
+      v
+React UI
+      |
+      v
+Gateway / Auth
+      |
+      v
+Harness Orchestrator
+      |
+      +--> DSL Parser
+      |       Requirement / YAML -> DSLDocument
+      |
+      +--> Prompt Compiler
+      |       DSLDocument + Template -> Harness Prompt
+      |
+      +--> Agent Adapter
+              Harness Prompt -> Local LLM / Ollama
+                    |
+                    v
+              Generated Project Files
+                    |
+                    v
+              Compile / Test / Error Capture
+                    |
+                    v
+              Agent Repair Loop
+```
+
+Backend module layout:
+
+```text
+enterprise-insight-backend/
+|-- common
+|-- gateway-service
+|-- auth-service
+|-- metadata-service
+|-- prompt-compiler
+|-- agent-adapter
+|-- harness-compiler-platform
+`-- ai-service
+```
+
+Frontend:
+
+```text
+enterprise-insight-backend-react/
+`-- src/pages/HarnessCompiler.tsx
+```
+
+## Core Innovations
+
+### DSL -> Prompt -> Code
+
+The system introduces a deterministic generation pipeline:
+
+```text
+Requirement
+  -> DSLDocument
+  -> Harness Prompt
+  -> Agent Execution
+  -> Generated Code
+```
+
+Example DSL:
+
+```yaml
+project:
+  type: spring_boot
+  modules:
+    - user
+    - auth
+    - leaderboard
+constraints:
+  db: mysql
+```
+
+Compiled Harness Prompt:
+
+```text
+# ROLE
+You are an AI Harness coding agent that generates production-ready Java and Spring Boot code.
+
+# GOAL
+Convert the structured DSL into a complete, compilable implementation plan and code files.
+
+# MODULES
+- project_type: spring_boot
+- module: user
+- module: auth
+- module: leaderboard
+
+# CONSTRAINTS
+- db: mysql
+
+# OUTPUT FORMAT
+Return only generated files using this exact format:
+===FILE START===
+relative/path/from/project/root
+complete file content
+===FILE END===
+```
+
+### Prompt Compiler
+
+`prompt-compiler` is the core compiler module. It provides:
+
+- YAML DSL parsing with Jackson
+- Java domain model validation
+- Stable Prompt generation
+- Extensible template registry
+- Deterministic output sections: `ROLE`, `GOAL`, `MODULES`, `CONSTRAINTS`, `OUTPUT FORMAT`
+
+The compiler treats prompts as engineered artifacts rather than ad hoc strings.
+
+### Agent Loop
+
+`agent-adapter` implements an automated repair loop:
+
+```text
+Generate Code
+  -> Write Project Files
+  -> Run Verification Commands
+  -> Capture stdout / stderr / exitCode
+  -> Feed Error Back to LLM
+  -> Regenerate Corrected Project
+  -> Stop on Success or maxRepairRounds
+```
+
+Termination is explicit:
+
+- Stop when verification passes
+- Stop when `maxRepairRounds + 1` attempts are exhausted
+
+This makes the system closer to an AI engineering harness than a one-shot chatbot.
+
+## Tech Stack
+
+Backend:
+
 - Java 21
-- Spring Boot 3.2 + Spring Cloud 2023 + Spring Cloud Alibaba 2023
-- Nacos / MySQL / Redis（Docker Compose）
-- Vue 3 + Vite + Garfish
+- Spring Boot 3
+- Spring Cloud 2023
+- Maven multi-module architecture
+- Jackson YAML
+- JDK `HttpClient`
+- Ollama local LLM API
+- SLF4J logging
+- JUnit 5 / AssertJ
 
-## 快速开始
+Frontend:
 
-### 1) 基础设施
+- React 19
+- TypeScript
+- Vite
+- React Router
+
+Reusable platform modules:
+
+- `gateway-service`: API routing
+- `auth-service`: authentication and JWT
+- `common`: shared DTOs, error codes, security helpers
+- `metadata-service`: platform metadata
+
+## Usage
+
+### Start Infrastructure
+
 ```bash
 cd enterprise-insight-backend
-# 启动 Nacos / MySQL / Redis
-# 需要 Docker Desktop
-# 如仅需 Nacos，可注释其他服务
-
-# Windows
-powershell -Command "docker compose up -d"
+docker compose up -d nacos mysql redis qdrant ollama
 ```
 
-### 2) 后端服务
+Pull a local model:
+
+```bash
+ollama pull llama3.1
+```
+
+### Run Prompt Compiler
+
 ```bash
 cd enterprise-insight-backend
-# 启动网关
-mvn -pl gateway-service -am spring-boot:run
-
-# 新开终端启动其他服务
-mvn -pl auth-service -am spring-boot:run
-mvn -pl metadata-service -am spring-boot:run
-mvn -pl analysis-service -am spring-boot:run
-mvn -pl ai-service -am spring-boot:run
+mvn -pl prompt-compiler -am spring-boot:run
 ```
 
-### 3) 前端（Garfish）
+Endpoint:
+
+```http
+POST /api/prompt-compiler/compile
+```
+
+Request:
+
+```json
+{
+  "dsl": "project:\n  type: spring_boot\n  modules:\n    - user\n    - auth\n    - leaderboard\nconstraints:\n  db: mysql",
+  "templateName": "harness-default"
+}
+```
+
+### Run Agent Adapter
+
 ```bash
-# 主应用
-cd enterprise-insight-frontend
-npm install
-npm run dev
+cd enterprise-insight-backend
+mvn -pl agent-adapter -am spring-boot:run
+```
 
-# 数据洞察子应用
-cd enterprise-insight-frontend/insight-app
-npm install
-npm run dev
+Default config:
 
-# AI 助手子应用
-cd enterprise-insight-frontend/assistant-app
+```yaml
+agent:
+  ollama:
+    base-url: http://localhost:11434
+    model: llama3.1
+    max-retries: 2
+    retry-backoff: 1s
+    verification-timeout: 3m
+    output-root: ./agent-output
+```
+
+Auto-repair endpoint:
+
+```http
+POST /api/agent-adapter/auto-repair/generate
+```
+
+Request:
+
+```json
+{
+  "model": "llama3.1",
+  "targetDirectory": "demo-harness-app",
+  "maxRepairRounds": 2,
+  "verifyCommands": [["mvn", "test"]],
+  "prompt": "Generate a Spring Boot 3 Maven project with user, auth, and leaderboard modules."
+}
+```
+
+Generated files are written under:
+
+```text
+enterprise-insight-backend/agent-output/demo-harness-app/
+```
+
+### Run React UI
+
+```bash
+cd enterprise-insight-backend-react
 npm install
 npm run dev
 ```
 
-### 端口
-- 主应用：`http://localhost:5173`
-- 洞察子应用：`http://localhost:5174`
-- 助手子应用：`http://localhost:5175`
-- 网关：`http://localhost:8080`
+Open:
 
-### 鉴权说明
-- JWT secret 可通过 `JWT_SECRET` 环境变量覆盖。
-- 调用 `POST /api/auth/login` 获取 token，后续请求带上 `Authorization: Bearer <token>`。
-- 服务内使用 `@RequireRoles` + `X-User-Roles` 进行方法级权限校验。
-- 错误响应包含统一 `code` 字段（见 `ErrorCodes`）。
+```text
+http://localhost:5173/harness
+```
 
-## 示例接口（经由网关）
-- `GET /api/analysis/metrics`
-- `GET /api/analysis/datasets`（Feign -> metadata-service，带 fallback）
-- `GET /api/metadata/datasets`
-- `POST /api/ai/agent/ask`
-- `POST /api/auth/login`
+The UI supports:
 
-## 简历亮点
-- 微服务架构：注册发现 + 配置中心 + 网关路由
-- JWT + RBAC：网关规则与服务内方法级校验
-- OpenFeign 服务调用 + Resilience4j 降级
-- Garfish 微前端：主应用编排多子应用
+- Requirement input
+- DSL preview
+- Harness Prompt preview
+- Code-generation trigger
+- Generation status display
 
-## 可拓展方向
-- 多租户隔离与细粒度权限
-- 真正的指标存储与 OLAP 查询
-- 接入实际大模型（Qwen/DeepSeek/智谱等）
-- 观测性：Tracing + Metrics + Logging
+## Example Flow
+
+Input requirement:
+
+```text
+Build a Spring Boot application with user, auth, and leaderboard modules using MySQL.
+```
+
+Generated DSL:
+
+```yaml
+project:
+  type: spring_boot
+  modules:
+    - user
+    - auth
+    - leaderboard
+constraints:
+  db: mysql
+```
+
+Agent output protocol:
+
+```text
+===FILE START===
+pom.xml
+complete file content
+===FILE END===
+===FILE START===
+src/main/java/com/example/Application.java
+complete file content
+===FILE END===
+```
+
+Verification:
+
+```bash
+mvn test
+```
+
+If verification fails, stderr/stdout are appended to a repair prompt and sent back to the LLM.
+
+## Why This Project Matters
+
+This project demonstrates engineering-grade AI system design:
+
+- It separates intent, structure, prompt compilation, and execution.
+- It treats prompts as compiler output, not UI text.
+- It uses local LLM deployment through Ollama.
+- It includes retries, logging, validation, file-system safety, and termination conditions.
+- It moves from one-shot generation to an Agent repair loop.
+
+For interviews, the key architectural point is that this is not a wrapper around an LLM API. It is a compiler-inspired AI harness that turns unstructured requirements into deterministic prompts and verifiable code-generation workflows.
+
+## Verification Commands
+
+Backend tests:
+
+```bash
+cd enterprise-insight-backend
+mvn test
+```
+
+Frontend build:
+
+```bash
+cd enterprise-insight-backend-react
+npm run build
+```
+
+## Roadmap
+
+- Persist DSL, Prompt, and Agent runs in `metadata-service`
+- Add multi-template Prompt compilation
+- Add project-level diff and patch application
+- Add streaming repair progress in the React UI
+- Add provider adapters for OpenAI-compatible APIs, Qwen, DeepSeek, and vLLM
+- Add sandboxed verification runners for safer command execution

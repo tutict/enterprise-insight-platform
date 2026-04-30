@@ -1,4 +1,4 @@
-﻿package com.tutict.eip.common.security;
+package com.tutict.eip.common.security;
 
 public class AccessDeniedException extends RuntimeException {
     private final String code;

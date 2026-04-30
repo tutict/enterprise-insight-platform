@@ -1,4 +1,4 @@
-﻿package com.tutict.eip.metadata.security;
+package com.tutict.eip.metadata.security;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;

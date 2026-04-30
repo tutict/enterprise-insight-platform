@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: ai-service
+  threads:
+    virtual:
+      enabled: true
   cloud:
     nacos:
       discovery:
@@ -16,3 +19,24 @@ management:
     web:
       exposure:
         include: health,info
+
+mcp:
+  enabled: false
+  websocket-url: ${MCP_WS_URL:ws://localhost:9000/mcp}
+  connect-timeout-ms: 3000
+  response-timeout-ms: 8000
+  auth-token: ${MCP_AUTH_TOKEN:}
+
+ai:
+  ollama:
+    base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+    model: ${OLLAMA_MODEL:qwen2.5:7b}
+    embedding-model: ${OLLAMA_EMBEDDING_MODEL:embeddinggemma}
+  qdrant:
+    base-url: ${QDRANT_URL:http://localhost:6333}
+    collection: ${QDRANT_COLLECTION:harness_docs}
+  rag:
+    top-k: ${RAG_TOP_K:4}
+    max-context-chars: ${RAG_MAX_CONTEXT_CHARS:2000}
+    chunk-size: ${RAG_CHUNK_SIZE:800}
+    chunk-overlap: ${RAG_CHUNK_OVERLAP:120}

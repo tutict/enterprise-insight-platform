@@ -12,7 +12,7 @@ spring:
         server-addr: ${NACOS_ADDR:localhost:8848}
     gateway:
       default-filters:
-        - AddResponseHeader=X-Platform, Enterprise-Insight
+        - AddResponseHeader=X-Platform, AI-Harness-Compiler
       routes:
         - id: auth-service
           uri: lb://auth-service
@@ -22,14 +22,22 @@ spring:
           uri: lb://metadata-service
           predicates:
             - Path=/api/metadata/**
-        - id: analysis-service
-          uri: lb://analysis-service
-          predicates:
-            - Path=/api/analysis/**
         - id: ai-service
           uri: lb://ai-service
           predicates:
             - Path=/api/ai/**
+        - id: prompt-compiler
+          uri: lb://prompt-compiler
+          predicates:
+            - Path=/api/prompt-compiler/**
+        - id: agent-adapter
+          uri: lb://agent-adapter
+          predicates:
+            - Path=/api/agent-adapter/**
+        - id: harness-compiler-platform
+          uri: lb://harness-compiler-platform
+          predicates:
+            - Path=/api/harness/**
 
 security:
   jwt:

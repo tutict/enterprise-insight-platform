@@ -1,9 +1,10 @@
-﻿package com.tutict.eip.ai.security;
+package com.tutict.eip.ai.security;
 
 import com.tutict.eip.common.ErrorCodes;
 import com.tutict.eip.common.security.AccessDeniedException;
 import com.tutict.eip.common.security.RequireRoles;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -29,7 +30,6 @@ public class RoleGuardInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // 从网关透传的角色头中解析用户角色
         String rolesHeader = request.getHeader("X-User-Roles");
         if (rolesHeader == null || rolesHeader.isBlank()) {
             throw new AccessDeniedException("Roles header missing", ErrorCodes.FORBIDDEN);

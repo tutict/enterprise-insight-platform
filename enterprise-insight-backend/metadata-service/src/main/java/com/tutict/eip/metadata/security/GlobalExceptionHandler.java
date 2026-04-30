@@ -1,4 +1,4 @@
-﻿package com.tutict.eip.metadata.security;
+package com.tutict.eip.metadata.security;
 
 import com.tutict.eip.common.ApiResponse;
 import com.tutict.eip.common.ErrorCodes;

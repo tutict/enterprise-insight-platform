@@ -1,4 +1,4 @@
-﻿package com.tutict.eip.ai.security;
+package com.tutict.eip.ai.security;
 
 import com.tutict.eip.common.ApiResponse;
 import com.tutict.eip.common.ErrorCodes;

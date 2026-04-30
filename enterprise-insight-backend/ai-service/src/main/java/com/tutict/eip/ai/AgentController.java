@@ -1,5 +1,6 @@
-﻿package com.tutict.eip.ai;
+package com.tutict.eip.ai;
 
+import com.tutict.eip.ai.rag.RagService;
 import com.tutict.eip.common.ApiResponse;
 import com.tutict.eip.common.security.RequireRoles;
 import com.tutict.eip.common.security.RoleConstants;
@@ -16,22 +17,22 @@ import java.util.List;
 @RequestMapping("/api/ai")
 public class AgentController {
 
-    @PostMapping("/agent/ask")
-    @RequireRoles({RoleConstants.ANALYST})
-    // Mock AI Agent：返回建议 SQL 与下一步动作
-    public ApiResponse<AgentAnswer> ask(@Valid @RequestBody AgentQuery query) {
-        AgentAnswer answer = new AgentAnswer(
-                "Received: " + query.question() + ". This is a mock agent. Check revenue and orders trend.",
-                "insight_query",
-                "SELECT day, revenue, orders FROM sales_daily WHERE day >= CURRENT_DATE - INTERVAL '7 days'",
-                List.of("View last 30 days revenue", "Compare channel ROI", "Top 10 customers")
-        );
-        return ApiResponse.ok("mock agent response", answer);
+    private final RagService ragService;
+
+    public AgentController(RagService ragService) {
+        this.ragService = ragService;
     }
 
-    // 问答请求 DTO
-    public record AgentQuery(@NotBlank String question) {}
+    @PostMapping("/agent/ask")
+    @RequireRoles({RoleConstants.ANALYST})
+    public ApiResponse<AgentAnswer> ask(@Valid @RequestBody AgentQuery query) {
+        AgentAnswer answer = ragService.answer(query.question());
+        return ApiResponse.ok("agent knowledge response", answer);
+    }
 
-    // 问答响应 DTO
-    public record AgentAnswer(String reply, String intent, String suggestedSql, List<String> nextActions) {}
+    public record AgentQuery(@NotBlank String question) {
+    }
+
+    public record AgentAnswer(String reply, String intent, List<String> artifacts, List<String> nextActions) {
+    }
 }

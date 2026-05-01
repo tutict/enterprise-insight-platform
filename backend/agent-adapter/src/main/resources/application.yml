@@ -1,0 +1,24 @@
+server:
+  port: 8088
+
+agent:
+  ollama:
+    base-url: http://localhost:11434
+    model: llama3.1
+    request-timeout: 2m
+    max-retries: 2
+    retry-backoff: 1s
+    verification-timeout: 3m
+    output-root: ./agent-output
+
+llm:
+  model-type: local
+  api-key: ${OPENAI_API_KEY:}
+  base-url: http://localhost:11434
+  model: llama3
+  local-base-url: http://localhost:11434
+  local-model: llama3
+  remote-base-url: https://api.openai.com/v1
+  remote-model: gpt-4o-mini
+  stream: false
+  request-timeout: 2m

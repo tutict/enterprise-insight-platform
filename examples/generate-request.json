@@ -1,0 +1,3 @@
+{
+  "prompt": "ROLE\nYou are a senior Java architect and AI coding agent.\n\nGOAL\nBuild a Spring Boot 3 backend with login and user management.\n\nMODULES\n- api\n- service\n- domain\n- authentication\n- persistence\n\nCONSTRAINTS\n- language: Java 17+\n- framework: Spring Boot 3\n- quality: production-ready, readable, testable\n\nOUTPUT FORMAT\nReturn complete source files with paths and code blocks."
+}

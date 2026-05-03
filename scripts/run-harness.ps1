@@ -6,7 +6,7 @@ $backendDir = Join-Path $repoRoot "backend"
 
 Push-Location $backendDir
 try {
-    mvn -pl harness-compiler-platform -am spring-boot:run
+    mvn -pl orchestrator-service -am spring-boot:run
 }
 finally {
     Pop-Location

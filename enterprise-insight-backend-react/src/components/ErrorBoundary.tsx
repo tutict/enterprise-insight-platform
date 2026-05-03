@@ -30,7 +30,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       occurredAt: new Date().toISOString(),
     }
 
-    fetch('/api/harness/logs/ui-error', {
+    fetch('/api/orchestrator/logs/ui-error', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -44,16 +44,12 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="error-boundary">
-          <div className="error-card">
-            <p className="eyebrow">Something went wrong</p>
-            <h1>We hit an unexpected error.</h1>
-            <p className="muted">{this.state.message}</p>
-            <button
-              className="primary-btn"
-              type="button"
-              onClick={this.handleReload}
-            >
+        <div className="grid min-h-screen place-items-center bg-console-950 px-5 text-slate-100">
+          <div className="panel w-full max-w-lg p-6">
+            <p className="text-xs uppercase tracking-wide text-red-300">Something went wrong</p>
+            <h1 className="mt-2 text-2xl font-semibold">Unexpected error</h1>
+            <p className="muted mt-2">{this.state.message}</p>
+            <button className="btn-primary mt-5" type="button" onClick={this.handleReload}>
               Reload page
             </button>
           </div>

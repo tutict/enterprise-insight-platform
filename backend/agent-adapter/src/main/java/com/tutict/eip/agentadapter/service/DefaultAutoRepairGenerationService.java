@@ -7,7 +7,6 @@ import com.tutict.eip.agentadapter.domain.AutoRepairGenerationResponse;
 import com.tutict.eip.agentadapter.domain.OllamaGenerationResult;
 import com.tutict.eip.agentadapter.domain.ProjectWriteResult;
 import com.tutict.eip.agentadapter.domain.VerificationResult;
-import com.tutict.eip.agentadapter.provider.AgentAdapter;
 import com.tutict.eip.agentadapter.storage.ProjectFileWriter;
 import com.tutict.eip.agentadapter.verify.ProjectVerifier;
 import org.slf4j.Logger;

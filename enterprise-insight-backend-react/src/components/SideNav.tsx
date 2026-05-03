@@ -1,54 +1,51 @@
 import { NavLink } from 'react-router-dom'
 
 const navItems = [
-  { label: 'Harness', path: '/harness' },
+  { label: 'DSL Editor', path: '/dsl' },
+  { label: 'Run', path: '/run' },
   { label: 'Runs', path: '/runs' },
-  { label: 'Templates', path: '/templates' },
-  { label: 'Agents', path: '/agents' },
   { label: 'Settings', path: '/settings' },
 ]
 
 function SideNav() {
   return (
-    <aside className="side-nav">
-      <div className="brand">
-        <div className="brand-mark">
-          <span />
-          <span />
-          <span />
+    <aside className="hidden w-72 shrink-0 border-r border-white/10 bg-console-900/90 px-4 py-5 lg:block">
+      <div className="mb-8 flex items-center gap-3">
+        <div className="grid h-10 w-10 place-items-center rounded-lg bg-teal-400 text-sm font-black text-slate-950">
+          AO
         </div>
         <div>
-          <p className="brand-title">Harness Compiler</p>
-          <p className="brand-subtitle">AI Engineering Console</p>
+          <p className="text-sm font-semibold text-slate-100">AI Orchestrator</p>
+          <p className="text-xs text-slate-500">Control Console</p>
         </div>
       </div>
 
-      <nav className="nav-links">
+      <nav className="space-y-1">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             end={item.path === '/'}
             className={({ isActive }) =>
-              `nav-link${isActive ? ' active' : ''}`
+              `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition ${
+                isActive
+                  ? 'bg-teal-400/12 text-teal-200'
+                  : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
+              }`
             }
           >
-            <span className="nav-dot" />
+            <span className="h-1.5 w-1.5 rounded-full bg-current" />
             {item.label}
           </NavLink>
         ))}
       </nav>
 
-      <div className="side-card">
-        <p className="side-card-title">Agent Loop</p>
-        <p className="side-card-value">Compiler ready</p>
-        <div className="side-card-row">
-          <span className="status-dot status-dot--ok" />
-          Prompt compiler online
-        </div>
-        <div className="side-card-row">
-          <span className="status-dot status-dot--warn" />
-          Ollama local model
+      <div className="mt-8 rounded-lg border border-white/10 bg-white/[0.03] p-4">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Pipeline</p>
+        <div className="mt-3 space-y-2 text-sm text-slate-300">
+          <p>compile</p>
+          <p>generate</p>
+          <p>verify</p>
         </div>
       </div>
     </aside>

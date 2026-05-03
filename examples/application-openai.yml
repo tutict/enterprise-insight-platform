@@ -1,13 +1,16 @@
 server:
-  port: 8090
+  port: 8091
 
 spring:
   application:
-    name: harness-compiler-platform
+    name: orchestrator-service
 
-llm:
-  model-type: remote
-  api-key: ${OPENAI_API_KEY}
-  base-url: https://api.openai.com/v1
-  model: gpt-4o-mini
-  timeout: 2m
+agent:
+  ollama:
+    base-url: http://localhost:11434
+    model: llama3.1
+    request-timeout: 2m
+    max-retries: 2
+    retry-backoff: 1s
+    verification-timeout: 3m
+    output-root: ./agent-output

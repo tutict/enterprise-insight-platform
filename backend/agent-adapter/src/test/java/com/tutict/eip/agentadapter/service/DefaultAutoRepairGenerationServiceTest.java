@@ -6,7 +6,6 @@ import com.tutict.eip.agentadapter.domain.AutoRepairGenerationRequest;
 import com.tutict.eip.agentadapter.domain.AutoRepairGenerationResponse;
 import com.tutict.eip.agentadapter.domain.OllamaGenerationResult;
 import com.tutict.eip.agentadapter.domain.VerificationResult;
-import com.tutict.eip.agentadapter.provider.AgentAdapter;
 import com.tutict.eip.agentadapter.storage.MarkerProjectFileWriter;
 import com.tutict.eip.agentadapter.verify.ProjectVerifier;
 import org.junit.jupiter.api.Test;

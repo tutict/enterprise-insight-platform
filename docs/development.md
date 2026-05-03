@@ -13,28 +13,26 @@ cd backend
 mvn test
 ```
 
-## Run Harness Compiler Platform
+## Run Orchestrator Service
 
 ```bash
 cd backend
-mvn -pl harness-compiler-platform -am spring-boot:run
+mvn -pl orchestrator-service -am spring-boot:run
 ```
 
-## Local LLM Configuration
+## Local Agent Configuration
 
 ```yaml
-llm:
-  model-type: local
-  base-url: http://localhost:11434
-  model: llama3
+agent:
+  ollama:
+    base-url: http://localhost:11434
+    model: llama3.1
 ```
 
-## Remote LLM Configuration
+## Compiler Boundary
 
-```yaml
-llm:
-  model-type: remote
-  api-key: ${OPENAI_API_KEY}
-  base-url: https://api.openai.com/v1
-  model: gpt-4o-mini
-```
+`harness-compiler` only compiles requirement DSL into a structured prompt. It does not call LLMs.
+
+## Orchestrator Boundary
+
+`orchestrator-service` coordinates compiler output with `agent-adapter` execution and verification.

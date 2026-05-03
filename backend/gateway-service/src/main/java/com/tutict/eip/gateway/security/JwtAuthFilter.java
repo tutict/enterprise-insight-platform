@@ -28,9 +28,9 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     private static final Map<String, List<String>> ROLE_RULES = Map.of(
             "/api/metadata/templates", List.of(RoleConstants.ANALYST),
             "/api/metadata/agents", List.of(RoleConstants.ANALYST),
-            "/api/prompt-compiler", List.of(RoleConstants.ANALYST),
+            "/api/compiler", List.of(RoleConstants.ANALYST),
             "/api/agent-adapter", List.of(RoleConstants.ANALYST),
-            "/api/harness", List.of(RoleConstants.ANALYST),
+            "/api/orchestrator", List.of(RoleConstants.ANALYST),
             "/api/ai", List.of(RoleConstants.ANALYST)
     );
 

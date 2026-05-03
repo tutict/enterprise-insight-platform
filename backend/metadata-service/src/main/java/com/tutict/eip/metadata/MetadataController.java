@@ -41,7 +41,7 @@ public class MetadataController {
     public ApiResponse<List<AgentProviderInfo>> agents() {
         List<AgentProviderInfo> data = List.of(
                 new AgentProviderInfo("ollama", "llama3.1", "http://localhost:11434/api/generate", "configured"),
-                new AgentProviderInfo("agent-adapter", "local-default", "/api/agent-adapter/generate", "available")
+                new AgentProviderInfo("agent-adapter", "local-default", "/api/agent-adapter/auto-repair/generate", "available")
         );
         return ApiResponse.ok(data);
     }

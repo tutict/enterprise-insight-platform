@@ -1,9 +1,6 @@
-import {
-  clearStoredAuth,
-  getStoredAuth,
-  isAuthExpired,
-} from '../auth/authStorage'
-import { emitNotification } from '../state/notifications'
+import axios, { type AxiosError, type AxiosRequestConfig } from 'axios'
+import { clearStoredAuth, getStoredAuth, isAuthExpired } from '../auth/authStorage'
+import { useNotificationStore } from '../store/notifications'
 
 export type ApiResponse<T> = {
   code: string
@@ -12,10 +9,6 @@ export type ApiResponse<T> = {
   data: T
   timestamp: string
 }
-
-type ApiError = Error & { status?: number }
-
-type RequestOptions = Omit<RequestInit, 'body'> & { body?: unknown }
 
 const DEFAULT_BASE_URL = ''
 
@@ -39,60 +32,81 @@ const getAuthToken = () => {
   return stored.token
 }
 
-export async function apiRequest<T>(path: string, options: RequestOptions = {}) {
-  const baseUrl = getApiBaseUrl()
-  const headers = new Headers(options.headers)
+export const httpClient = axios.create({
+  baseURL: getApiBaseUrl(),
+  timeout: 180000,
+})
 
-  if (!headers.has('Content-Type') && options.body !== undefined) {
-    headers.set('Content-Type', 'application/json')
-  }
-
+httpClient.interceptors.request.use((config) => {
   const token = getAuthToken()
   if (token) {
-    headers.set('Authorization', `Bearer ${token}`)
+    config.headers.Authorization = `Bearer ${token}`
   }
+  return config
+})
 
-  const response = await fetch(`${baseUrl}${path}`, {
-    ...options,
-    headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  })
+export async function apiRequest<T>(
+  path: string,
+  config: AxiosRequestConfig & { body?: unknown } = {},
+) {
+  try {
+    const { body, ...axiosConfig } = config
+    const response = await httpClient.request<ApiResponse<T> | T>({
+      url: path,
+      ...axiosConfig,
+      data: body ?? axiosConfig.data,
+    })
+    const payload = response.data
 
-  const text = await response.text()
-  const payload = text ? (JSON.parse(text) as ApiResponse<T> | T) : null
+    if (payload && typeof payload === 'object' && 'success' in payload) {
+      const apiPayload = payload as ApiResponse<T>
+      if (!apiPayload.success) {
+        throw new Error(apiPayload.message || 'Request failed')
+      }
+      return apiPayload.data
+    }
 
-  if (!response.ok) {
-    if (response.status === 401) {
+    return payload as T
+  } catch (err) {
+    const error = err as AxiosError<ApiResponse<unknown> | { error?: string; message?: string }>
+    if (error.response?.status === 401) {
       clearStoredAuth()
-      emitNotification({
+      useNotificationStore.getState().push({
         id: crypto.randomUUID(),
         type: 'error',
         message: 'Session expired. Please sign in again.',
       })
     }
-    if (response.status === 403) {
-      emitNotification({
+    if (error.response?.status === 403) {
+      useNotificationStore.getState().push({
         id: crypto.randomUUID(),
         type: 'error',
         message: 'You do not have permission to access this resource.',
       })
     }
+
+    const data = error.response?.data
     const message =
-      payload && typeof payload === 'object' && 'message' in payload
-        ? String((payload as ApiResponse<T>).message)
-        : `HTTP ${response.status}`
-    const error = new Error(message) as ApiError
-    error.status = response.status
-    throw error
-  }
+      data && typeof data === 'object' && 'message' in data
+        ? String(data.message)
+        : data && typeof data === 'object' && 'error' in data
+          ? String(data.error)
+          : error.message || 'Request failed'
 
-  if (payload && typeof payload === 'object' && 'success' in payload) {
-    const apiPayload = payload as ApiResponse<T>
-    if (!apiPayload.success) {
-      throw new Error(apiPayload.message || 'Request failed')
+    throw new Error(message)
+  }
+}
+
+export async function apiHealthCheck() {
+  try {
+    await httpClient.get('/actuator/health', { timeout: 5000 })
+    return true
+  } catch {
+    try {
+      await httpClient.get('/api/metadata/templates', { timeout: 5000 })
+      return true
+    } catch {
+      return false
     }
-    return apiPayload.data
   }
-
-  return payload as T
 }

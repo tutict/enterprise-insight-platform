@@ -4,7 +4,6 @@ import com.tutict.eip.agentadapter.domain.AgentExecutionRequest;
 import com.tutict.eip.agentadapter.domain.AgentExecutionResponse;
 import com.tutict.eip.agentadapter.domain.OllamaGenerationResult;
 import com.tutict.eip.agentadapter.domain.WrittenFile;
-import com.tutict.eip.agentadapter.provider.AgentAdapter;
 import com.tutict.eip.agentadapter.storage.CodeFileWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

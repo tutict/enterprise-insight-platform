@@ -1,15 +1,15 @@
 # API
 
-Base URL for the MVP harness service:
+Base URL through the gateway:
 
 ```text
-http://localhost:8090
+http://localhost:8080
 ```
 
 ## Compile Requirement
 
 ```http
-POST /compile
+POST /api/compiler/compile
 Content-Type: application/json
 ```
 
@@ -17,7 +17,7 @@ Request:
 
 ```json
 {
-  "requirement": "做一个带登录的系统"
+  "requirement": "Build a Spring Boot login system with user management and database persistence"
 }
 ```
 
@@ -28,8 +28,8 @@ Response:
   "dsl": {
     "name": "ai-harness-generated-system",
     "type": "spring-boot-backend",
-    "requirement": "做一个带登录的系统",
-    "modules": ["api", "service", "domain", "authentication"],
+    "requirement": "Build a Spring Boot login system with user management and database persistence",
+    "modules": ["api", "service", "domain", "authentication", "persistence"],
     "constraints": {
       "language": "Java 17+",
       "framework": "Spring Boot 3"
@@ -40,10 +40,10 @@ Response:
 }
 ```
 
-## Generate Code
+## Run Orchestration
 
 ```http
-POST /generate
+POST /api/orchestrator/run
 Content-Type: application/json
 ```
 
@@ -51,7 +51,11 @@ Request:
 
 ```json
 {
-  "prompt": "ROLE\nYou are a senior Java architect..."
+  "requirement": "Build a Spring Boot login system with user management and database persistence",
+  "model": "llama3.1",
+  "targetDirectory": "generated-harness-app",
+  "verifyCommands": [["mvn", "test"]],
+  "maxRepairRounds": 2
 }
 ```
 
@@ -59,6 +63,14 @@ Response:
 
 ```json
 {
-  "code": "..."
+  "runId": "...",
+  "dsl": {},
+  "harnessPrompt": "ROLE\n...",
+  "generation": {
+    "successful": true,
+    "status": "VERIFIED",
+    "projectRoot": "..."
+  },
+  "createdAt": "..."
 }
 ```

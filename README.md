@@ -24,6 +24,9 @@ DSL Parser
 Prompt Compiler
    |
    v
+Orchestrator
+   |
+   v
 LLM Adapter
    |
    v
@@ -40,26 +43,27 @@ Transforms natural language into structured DSL.
 
 Compiles DSL into structured Harness Prompt.
 
-### 3. LLM Adapter
+### 3. Orchestrator Service
 
-Supports:
+Coordinates compiler output with the execution layer.
 
-- Remote LLM, OpenAI
-- Local LLM, Ollama
+### 4. Agent Adapter
 
-### 4. Code Generation Service
+Owns LLM execution and project verification.
+
+### 5. Code Generation
 
 Executes prompt and returns generated code.
 
 ## API
 
-### POST /compile
+### POST /api/compiler/compile
 
 Generate DSL and Prompt.
 
-### POST /generate
+### POST /api/orchestrator/run
 
-Generate code using LLM.
+Compile the requirement, execute the agent, and verify generated code.
 
 ## Example
 

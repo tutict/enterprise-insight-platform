@@ -1,87 +1,66 @@
-import useApiStatus from '../hooks/useApiStatus'
-
-const runs = [
-  {
-    id: 'run-compiler-001',
-    target: 'generated-harness-app',
-    status: 'Verified',
-    attempts: 2,
-  },
-  {
-    id: 'run-compiler-002',
-    target: 'auth-service-skeleton',
-    status: 'Prompt compiled',
-    attempts: 1,
-  },
-  {
-    id: 'run-compiler-003',
-    target: 'leaderboard-module',
-    status: 'Waiting for agent',
-    attempts: 0,
-  },
-]
+import CodeBlock from '../components/CodeBlock'
+import CodeOutput from '../components/CodeOutput'
+import ExecutionTimeline from '../components/ExecutionTimeline'
+import StatusBadge from '../components/StatusBadge'
+import { useHistoryStore } from '../store/historyStore'
 
 function Runs() {
-  const apiStatus = useApiStatus()
-  const statusLabel =
-    apiStatus.state === 'checking'
-      ? 'Checking'
-      : apiStatus.state === 'ok'
-        ? 'Online'
-        : 'Offline'
+  const runs = useHistoryStore((state) => state.runs)
+  const selectedRunId = useHistoryStore((state) => state.selectedRunId)
+  const selectRun = useHistoryStore((state) => state.selectRun)
+  const selectedRun = runs.find((run) => run.id === selectedRunId) ?? runs[0]
 
   return (
-    <div className="runs-page">
-      <section className="hero glass-card">
-        <div>
-          <p className="eyebrow">Run control</p>
-          <h2>Track compiler and agent execution.</h2>
-          <p className="hero-subtitle">
-            Monitor DSL compilation, Prompt generation, local model execution,
-            and automatic repair attempts.
-          </p>
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(380px,1fr)]">
+      <section className="panel overflow-hidden">
+        <div className="border-b border-white/10 p-5">
+          <h2 className="text-lg font-semibold text-slate-100">Runs</h2>
+          <p className="muted">Local browser history from real orchestrator responses.</p>
         </div>
-        <div className="hero-panel">
-          <div className="status-card">
-            <p className="status-title">API status</p>
-            <div className={`status-pill status-pill--${apiStatus.state}`}>
-              <span />
-              {statusLabel}
-            </div>
-            <p className="status-meta">
-              {apiStatus.message ?? 'Health check ready'}
-              {apiStatus.latencyMs ? ` - ${apiStatus.latencyMs}ms` : ''}
-            </p>
-          </div>
-          <div className="status-card">
-            <p className="status-title">Repair policy</p>
-            <p className="status-value">2 rounds</p>
-            <p className="status-meta">Stops on verified build or max attempts</p>
-          </div>
+        <div className="divide-y divide-white/10">
+          {runs.length ? (
+            runs.map((run) => (
+              <button
+                key={run.id}
+                type="button"
+                className={`grid w-full gap-3 px-5 py-4 text-left transition hover:bg-white/[0.04] ${
+                  selectedRun?.id === run.id ? 'bg-teal-400/10' : ''
+                }`}
+                onClick={() => selectRun(run.id)}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="truncate text-sm font-medium text-slate-100">{run.id}</span>
+                  <StatusBadge status={run.response.generation.successful ? 'success' : 'fail'} />
+                </div>
+                <div className="grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
+                  <span className="truncate">{run.targetDirectory}</span>
+                  <span>{run.model || 'default model'}</span>
+                  <span>{new Date(run.createdAt).toLocaleString()}</span>
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="p-8 text-sm text-slate-500">No runs yet. Execute a run from the Run page.</div>
+          )}
         </div>
       </section>
 
-      <section className="glass-card">
-        <div className="card-header">
-          <h3>Recent harness runs</h3>
-          <span className="chip">local</span>
-        </div>
-        <div className="table">
-          <div className="table-row table-head">
-            <span>Run</span>
-            <span>Target</span>
-            <span>Status</span>
-            <span>Attempts</span>
-          </div>
-          {runs.map((run) => (
-            <div key={run.id} className="table-row">
-              <span>{run.id}</span>
-              <span>{run.target}</span>
-              <span>{run.status}</span>
-              <span>{run.attempts}</span>
+      <section className="space-y-5">
+        {selectedRun ? (
+          <>
+            <ExecutionTimeline steps={selectedRun.timeline} />
+            <div className="panel p-5">
+              <h3 className="mb-3 text-sm font-semibold text-slate-100">Generated Output</h3>
+              <CodeOutput value={selectedRun.response.generation.finalOutput} />
             </div>
-          ))}
-        </div>
+            <div className="panel p-5">
+              <h3 className="mb-3 text-sm font-semibold text-slate-100">DSL</h3>
+              <CodeBlock value={selectedRun.dsl} collapsible />
+            </div>
+          </>
+        ) : (
+          <div className="panel p-8 text-sm text-slate-500">Select a run to inspect details.</div>
+        )}
       </section>
     </div>
   )

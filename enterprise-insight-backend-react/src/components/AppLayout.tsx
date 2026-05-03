@@ -4,13 +4,13 @@ import TopBar from './TopBar'
 
 function AppLayout() {
   return (
-    <div className="app-shell">
+    <div className="flex min-h-screen bg-console-950 text-slate-100">
       <SideNav />
-      <div className="app-main">
+      <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
-        <div className="app-content">
+        <main className="min-w-0 flex-1 overflow-auto px-6 py-5">
           <Outlet />
-        </div>
+        </main>
       </div>
     </div>
   )

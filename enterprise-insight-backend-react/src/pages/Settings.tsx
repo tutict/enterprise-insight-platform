@@ -1,44 +1,34 @@
+import { getApiBaseUrl } from '../api/client'
+
 function Settings() {
   return (
-    <div className="settings">
-      <section className="glass-card">
-        <div className="card-header">
-          <h2>Harness settings</h2>
-          <button className="ghost-btn" type="button">
-            Save changes
-          </button>
-        </div>
-        <div className="form-grid">
-          <label>
-            Workspace name
-            <input type="text" defaultValue="AI Harness Lab" />
+    <div className="grid gap-5 lg:grid-cols-2">
+      <section className="panel p-5">
+        <h2 className="text-lg font-semibold text-slate-100">Settings</h2>
+        <p className="muted mt-1">Runtime values used by the console client.</p>
+
+        <div className="mt-5 space-y-4">
+          <label className="block space-y-2">
+            <span className="text-xs font-medium text-slate-400">API base URL</span>
+            <input className="field w-full" readOnly value={getApiBaseUrl() || 'same-origin / Vite proxy'} />
           </label>
-          <label>
-            Default model
-            <input type="text" defaultValue="llama3.1" />
+          <label className="block space-y-2">
+            <span className="text-xs font-medium text-slate-400">Compiler endpoint</span>
+            <input className="field w-full" readOnly value="/api/compiler/compile" />
           </label>
-          <label>
-            Max repair rounds
-            <input type="number" defaultValue={2} />
-          </label>
-          <label>
-            Verification command
-            <input type="text" defaultValue="mvn test" />
+          <label className="block space-y-2">
+            <span className="text-xs font-medium text-slate-400">Orchestrator endpoint</span>
+            <input className="field w-full" readOnly value="/api/orchestrator/run" />
           </label>
         </div>
       </section>
 
-      <section className="glass-card">
-        <h3>Generation contract</h3>
-        <p className="muted">
-          Agents must return complete files using the file-block protocol so the
-          platform can write, verify, and repair projects deterministically.
-        </p>
-        <div className="pill-row">
-          <span className="chip">DSL</span>
-          <span className="chip">Prompt Compiler</span>
-          <span className="chip">Ollama</span>
-          <span className="chip">Agent Loop</span>
+      <section className="panel p-5">
+        <h3 className="text-sm font-semibold text-slate-100">Execution Contract</h3>
+        <div className="mt-4 space-y-3 text-sm text-slate-300">
+          <p>DSL Editor sends YAML text through the compiler request body.</p>
+          <p>Run sends the same DSL text to the orchestrator as the requirement field.</p>
+          <p>Timeline status is derived from actual orchestrator lifecycle and response fields.</p>
         </div>
       </section>
     </div>

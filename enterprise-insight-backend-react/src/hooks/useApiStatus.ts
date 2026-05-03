@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getApiBaseUrl } from '../api/client'
+import { apiHealthCheck } from '../api/client'
 
 type ApiState = 'checking' | 'ok' | 'down'
 
@@ -14,35 +14,22 @@ export default function useApiStatus() {
 
   useEffect(() => {
     const controller = new AbortController()
-    const baseUrl = getApiBaseUrl()
-    const healthUrl = `${baseUrl}/actuator/health`
     const startedAt = Date.now()
     const timeoutId = window.setTimeout(() => controller.abort(), 4000)
 
     const check = async () => {
       try {
-        const response = await fetch(healthUrl, { signal: controller.signal })
+        const isHealthy = await apiHealthCheck()
         const latencyMs = Date.now() - startedAt
-        if (!response.ok) {
+        if (!isHealthy) {
           setStatus({
             state: 'down',
             latencyMs,
-            message: `HTTP ${response.status}`,
+            message: 'Unreachable',
           })
           return
         }
-
-        let message = 'OK'
-        try {
-          const data = (await response.json()) as { status?: string }
-          if (data?.status) {
-            message = data.status
-          }
-        } catch {
-          message = 'Online'
-        }
-
-        setStatus({ state: 'ok', latencyMs, message })
+        setStatus({ state: 'ok', latencyMs, message: 'Online' })
       } catch (error) {
         if ((error as Error).name === 'AbortError') {
           setStatus({ state: 'down', message: 'Timeout' })

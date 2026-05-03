@@ -26,18 +26,18 @@ spring:
           uri: lb://ai-service
           predicates:
             - Path=/api/ai/**
-        - id: prompt-compiler
-          uri: lb://prompt-compiler
+        - id: harness-compiler
+          uri: lb://harness-compiler
           predicates:
-            - Path=/api/prompt-compiler/**
+            - Path=/api/compiler/**
         - id: agent-adapter
           uri: lb://agent-adapter
           predicates:
             - Path=/api/agent-adapter/**
-        - id: harness-compiler-platform
-          uri: lb://harness-compiler-platform
+        - id: orchestrator-service
+          uri: lb://orchestrator-service
           predicates:
-            - Path=/api/harness/**
+            - Path=/api/orchestrator/**
 
 security:
   jwt:

@@ -14,9 +14,9 @@
         <module>auth-service</module>
         <module>metadata-service</module>
         <module>ai-service</module>
-        <module>prompt-compiler</module>
         <module>agent-adapter</module>
-        <module>harness-compiler-platform</module>
+        <module>harness-compiler</module>
+        <module>orchestrator-service</module>
     </modules>
 
     <properties>
@@ -64,17 +64,17 @@
             </dependency>
             <dependency>
                 <groupId>com.tutict</groupId>
-                <artifactId>prompt-compiler</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tutict</groupId>
                 <artifactId>agent-adapter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.tutict</groupId>
-                <artifactId>harness-compiler-platform</artifactId>
+                <artifactId>harness-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tutict</groupId>
+                <artifactId>orchestrator-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

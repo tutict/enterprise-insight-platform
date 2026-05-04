@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useHistoryStore } from '../store/historyStore'
-import { useRunStore } from '../store/runStore'
+import { isExecutionActive, useRunStore } from '../store/runStore'
 
 const DEFAULT_VERIFY_COMMAND = ['mvn', 'test']
 
@@ -20,10 +20,7 @@ export function useRunPage() {
   const setDslText = useRunStore((state) => state.setDslText)
   const loadDsl = useRunStore((state) => state.loadDsl)
   const runCurrentDsl = useRunStore((state) => state.runCurrentDsl)
-  const status = useRunStore((state) => state.status)
-  const error = useRunStore((state) => state.error)
-  const result = useRunStore((state) => state.result)
-  const steps = useRunStore((state) => state.steps)
+  const execution = useRunStore((state) => state.execution)
 
   const savedDsls = useHistoryStore((state) => state.savedDsls)
   const selectSavedDsl = useHistoryStore((state) => state.selectSavedDsl)
@@ -65,11 +62,12 @@ export function useRunPage() {
     selectDsl,
     run,
     runState: {
-      status,
-      isRunning: status === 'running',
-      error,
-      result,
-      steps,
+      phase: execution.phase,
+      isRunning: isExecutionActive(execution),
+      error: execution.error ?? '',
+      result: execution.result ?? null,
+      steps: execution.steps,
+      runId: execution.id,
     },
   }
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNotificationStore } from '../store/notifications'
 import CodeBlock from './CodeBlock'
 
 type GeneratedFile = {
@@ -36,20 +37,64 @@ const parseGeneratedFiles = (value: string): GeneratedFile[] => {
 export default function CodeOutput({ value, emptyLabel = 'No output yet.' }: CodeOutputProps) {
   const files = useMemo(() => parseGeneratedFiles(value), [value])
   const [openFiles, setOpenFiles] = useState<Record<string, boolean>>({})
+  const pushNotification = useNotificationStore((state) => state.push)
 
   if (!files.length) {
     return <CodeBlock value={value} emptyLabel={emptyLabel} collapsible />
   }
 
+  const isFileOpen = (file: GeneratedFile, index: number) => openFiles[file.id] ?? index === 0
+  const allOpen = files.every((file, index) => isFileOpen(file, index))
+
+  const setAllFilesOpen = (isOpen: boolean) => {
+    setOpenFiles(Object.fromEntries(files.map((file) => [file.id, isOpen])))
+  }
+
+  const copyAllFiles = async () => {
+    if (!value.trim()) {
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: 'error',
+        message: 'No generated output to copy.',
+      })
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(value)
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: 'success',
+        message: 'Generated output copied to clipboard.',
+      })
+    } catch {
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: 'error',
+        message: 'Copy failed. Check browser clipboard permission.',
+      })
+    }
+  }
+
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between rounded-md border border-white/10 bg-console-950 px-3 py-2">
-        <span className="text-xs font-medium text-slate-300">{files.length} generated files</span>
-        <span className="text-xs text-slate-500">expand a file to inspect or copy</span>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-white/10 bg-console-950 px-3 py-2">
+        <div>
+          <span className="text-xs font-medium text-slate-300">{files.length} generated files</span>
+          <span className="ml-2 text-xs text-slate-500">inspect, fold, or copy output</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={() => setAllFilesOpen(!allOpen)}>
+            {allOpen ? 'Collapse all' : 'Expand all'}
+          </button>
+          <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={() => void copyAllFiles()}>
+            Copy all
+          </button>
+        </div>
       </div>
 
       {files.map((file, index) => {
-        const isOpen = openFiles[file.id] ?? index === 0
+        const isOpen = isFileOpen(file, index)
         return (
           <div key={file.id} className="overflow-hidden rounded-lg border border-white/10 bg-console-950">
             <button

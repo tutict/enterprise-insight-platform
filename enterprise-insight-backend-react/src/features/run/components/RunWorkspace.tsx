@@ -1,9 +1,11 @@
+import type { Edge } from '@xyflow/react'
 import CodeOutput from '../../../components/CodeOutput'
 import ExecutionTimeline from '../../../components/ExecutionTimeline'
+import FlowCanvas from '../../../components/flow/FlowCanvas'
+import type { WorkflowNode } from '../../../components/flow/FlowNodeComponent'
 import YamlEditor from '../../../components/YamlEditor'
 import type { OrchestratorRunResponse } from '../../../api/types'
-import type { SavedDsl, TimelineStep } from '../../../store/types'
-import type { RunStatus } from '../../../store/runStore'
+import type { ExecutionPhase, SavedDsl, TimelineStep } from '../../../store/types'
 
 type RunWorkspaceProps = {
   dslText: string
@@ -23,12 +25,17 @@ type RunWorkspaceProps = {
   savedDsls: SavedDsl[]
   selectDsl: (id: string) => void
   run: () => void
+  workflow: {
+    nodes: WorkflowNode[]
+    edges: Edge[]
+  }
   runState: {
-    status: RunStatus
+    phase: ExecutionPhase
     isRunning: boolean
     error: string
     result: OrchestratorRunResponse | null
     steps: TimelineStep[]
+    runId: string | null
   }
 }
 
@@ -40,6 +47,7 @@ export default function RunWorkspace({
   savedDsls,
   selectDsl,
   run,
+  workflow,
   runState,
 }: RunWorkspaceProps) {
   return (
@@ -129,7 +137,7 @@ export default function RunWorkspace({
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-100">Execution Result</h3>
             <span className="rounded-md border border-white/10 px-2 py-1 text-xs text-slate-400">
-              {runState.result?.generation.status ?? runState.status}
+              {runState.result?.generation.status ?? runState.phase}
             </span>
           </div>
           <CodeOutput
@@ -140,13 +148,20 @@ export default function RunWorkspace({
       </section>
 
       <aside className="space-y-5">
+        <section className="panel p-5">
+          <div className="mb-4">
+            <h2 className="text-sm font-semibold text-slate-100">Workflow Graph</h2>
+            <p className="muted">compile {'->'} generate {'->'} verify {'->'} repair</p>
+          </div>
+          <FlowCanvas nodes={workflow.nodes} edges={workflow.edges} />
+        </section>
         <ExecutionTimeline steps={runState.steps} />
         <section className="panel p-5">
           <h3 className="mb-3 text-sm font-semibold text-slate-100">Run Metadata</h3>
           <div className="space-y-3 text-sm text-slate-300">
             <div className="flex justify-between gap-4">
               <span className="text-slate-500">Run ID</span>
-              <span className="truncate">{runState.result?.runId ?? '-'}</span>
+              <span className="truncate">{runState.result?.runId ?? runState.runId ?? '-'}</span>
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-slate-500">Attempts</span>

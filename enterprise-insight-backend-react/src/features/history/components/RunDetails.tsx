@@ -1,6 +1,9 @@
+import { useMemo } from 'react'
 import CodeBlock from '../../../components/CodeBlock'
 import CodeOutput from '../../../components/CodeOutput'
 import ExecutionTimeline from '../../../components/ExecutionTimeline'
+import FlowCanvas from '../../../components/flow/FlowCanvas'
+import { createWorkflowGraph } from '../../../components/flow/useFlowData'
 import type { RunRecord } from '../../../store/types'
 
 type RunDetailsProps = {
@@ -8,10 +11,28 @@ type RunDetailsProps = {
 }
 
 export default function RunDetails({ run }: RunDetailsProps) {
+  const workflow = useMemo(() => {
+    if (!run) {
+      return { nodes: [], edges: [] }
+    }
+
+    return createWorkflowGraph(
+      run.steps,
+      run.phase,
+    )
+  }, [run])
+
   return (
     <section className="space-y-5">
       {run ? (
         <>
+          <div className="panel p-5">
+            <div className="mb-4">
+              <h2 className="text-sm font-semibold text-slate-100">Workflow Graph</h2>
+              <p className="muted">compile {'->'} generate {'->'} verify {'->'} repair</p>
+            </div>
+            <FlowCanvas nodes={workflow.nodes} edges={workflow.edges} />
+          </div>
           <ExecutionTimeline steps={run.steps} />
           <div className="panel p-5">
             <h3 className="mb-3 text-sm font-semibold text-slate-100">Generated Output</h3>

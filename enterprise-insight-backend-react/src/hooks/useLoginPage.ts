@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
+import { useNotificationStore } from '../store/notifications'
 
 type LocationState = {
   from?: { pathname?: string }
@@ -8,6 +9,7 @@ type LocationState = {
 
 export function useLoginPage() {
   const { login, isAuthenticated } = useAuth()
+  const pushNotification = useNotificationStore((state) => state.push)
   const navigate = useNavigate()
   const location = useLocation()
   const state = location.state as LocationState | null
@@ -23,9 +25,20 @@ export function useLoginPage() {
     setIsLoading(true)
     try {
       await login(username.trim(), password.trim())
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: 'success',
+        message: 'Signed in successfully.',
+      })
       navigate(redirectPath, { replace: true })
     } catch (err) {
-      setError((err as Error).message || 'Login failed')
+      const message = (err as Error).message || 'Login failed'
+      setError(message)
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: 'error',
+        message,
+      })
     } finally {
       setIsLoading(false)
     }

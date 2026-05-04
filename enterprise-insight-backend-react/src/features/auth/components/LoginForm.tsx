@@ -47,7 +47,12 @@ export default function LoginForm({ form, setForm, submit }: LoginFormProps) {
               required
             />
           </label>
-          {form.error ? <p className="text-sm text-red-300">{form.error}</p> : null}
+          {form.error ? (
+            <div className="rounded-lg border border-red-400/30 bg-red-950/60 p-3 text-sm text-red-100">
+              <p className="font-medium">Sign in failed</p>
+              <p className="mt-1 text-red-100/80">{form.error}</p>
+            </div>
+          ) : null}
           <button className="btn-primary w-full" type="submit" disabled={form.isLoading}>
             {form.isLoading ? 'Signing in...' : 'Sign in'}
           </button>

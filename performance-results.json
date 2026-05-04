@@ -1,0 +1,13 @@
+{
+  "baseUrl": "http://localhost:8091",
+  "authMode": "none",
+  "skipCompiler": true,
+  "requests": 1726,
+  "rps": 15.66,
+  "errorRate": 0,
+  "latency": {
+    "avgMs": 0.86,
+    "p95Ms": 1.9,
+    "p99Ms": 3.18
+  }
+}

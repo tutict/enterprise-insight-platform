@@ -1,4 +1,4 @@
-import type { RunRecord } from '../../../store/types'
+import type { RunRecord } from '../../run/model/runEvent'
 import RunDetails from './RunDetails'
 import RunList from './RunList'
 

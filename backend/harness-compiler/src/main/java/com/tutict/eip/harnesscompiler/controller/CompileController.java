@@ -2,6 +2,7 @@ package com.tutict.eip.harnesscompiler.controller;
 
 import com.tutict.eip.harnesscompiler.domain.CompileRequest;
 import com.tutict.eip.harnesscompiler.domain.CompileResponse;
+import com.tutict.eip.harnesscompiler.domain.graph.GraphDefinition;
 import com.tutict.eip.harnesscompiler.service.CompileService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,5 +23,10 @@ public class CompileController {
     @PostMapping("/compile")
     public CompileResponse compile(@Valid @RequestBody CompileRequest request) {
         return compileService.compile(request.getRequirement());
+    }
+
+    @PostMapping("/from-graph")
+    public CompileResponse compileFromGraph(@RequestBody GraphDefinition graph) {
+        return compileService.compileFromGraph(graph);
     }
 }

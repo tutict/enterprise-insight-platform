@@ -1,4 +1,4 @@
-import { useDslEditorPage } from '../../../hooks/useDslEditorPage'
+import { useDslEditorPage } from '../hooks/useDslEditorPage'
 import DslEditorWorkspace from '../components/DslEditorWorkspace'
 
 export default function DslEditorContainer() {

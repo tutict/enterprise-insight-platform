@@ -38,6 +38,10 @@ spring:
           uri: lb://orchestrator-service
           predicates:
             - Path=/api/orchestrator/**
+        - id: graph-runtime
+          uri: lb://orchestrator-service
+          predicates:
+            - Path=/api/graph/**
 
 security:
   jwt:

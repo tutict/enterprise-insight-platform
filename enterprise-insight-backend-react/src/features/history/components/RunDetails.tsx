@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
-import CodeBlock from '../../../components/CodeBlock'
-import CodeOutput from '../../../components/CodeOutput'
-import ExecutionTimeline from '../../../components/ExecutionTimeline'
-import FlowCanvas from '../../../components/flow/FlowCanvas'
-import { createWorkflowGraph } from '../../../components/flow/useFlowData'
-import type { RunRecord } from '../../../store/types'
+import CodeBlock from '../../../shared/components/CodeBlock'
+import CodeOutput from '../../run/components/CodeOutput'
+import ExecutionTimeline from '../../run/components/ExecutionTimeline'
+import FlowCanvas from '../../run/components/flow/FlowCanvas'
+import { createWorkflowGraph } from '../../run/hooks/useFlowData'
+import type { RunRecord } from '../../run/model/runEvent'
 
 type RunDetailsProps = {
   run: RunRecord | null

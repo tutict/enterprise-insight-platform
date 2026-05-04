@@ -34,7 +34,9 @@ public class DefaultOrchestratorService implements OrchestratorService {
                 buildGenerationRequest(request, compiled.getPrompt())
         );
         return new OrchestratorRunResponse(
-                UUID.randomUUID().toString(),
+                request.getRunId() == null || request.getRunId().isBlank()
+                        ? UUID.randomUUID().toString()
+                        : request.getRunId(),
                 compiled.getDsl(),
                 compiled.getPrompt(),
                 generation,

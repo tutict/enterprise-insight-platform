@@ -1,6 +1,5 @@
 import axios, { type AxiosError, type AxiosRequestConfig } from 'axios'
-import { clearStoredAuth, getStoredAuth, isAuthExpired } from '../auth/authStorage'
-import { useNotificationStore } from '../store/notifications'
+import { clearStoredAuth, getStoredAuth, isAuthExpired } from '../features/auth/context/authStorage'
 
 export type ApiResponse<T> = {
   code: string
@@ -71,18 +70,6 @@ export async function apiRequest<T>(
     const error = err as AxiosError<ApiResponse<unknown> | { error?: string; message?: string }>
     if (error.response?.status === 401) {
       clearStoredAuth()
-      useNotificationStore.getState().push({
-        id: crypto.randomUUID(),
-        type: 'error',
-        message: 'Session expired. Please sign in again.',
-      })
-    }
-    if (error.response?.status === 403) {
-      useNotificationStore.getState().push({
-        id: crypto.randomUUID(),
-        type: 'error',
-        message: 'You do not have permission to access this resource.',
-      })
     }
 
     const data = error.response?.data

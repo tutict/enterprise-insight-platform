@@ -1,4 +1,4 @@
-import { useRunsPage } from '../../../hooks/useRunsPage'
+import { useRunsPage } from '../hooks/useRunsPage'
 import RunsWorkspace from '../components/RunsWorkspace'
 
 export default function RunsContainer() {

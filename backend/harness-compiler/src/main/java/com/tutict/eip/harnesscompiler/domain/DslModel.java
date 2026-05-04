@@ -9,9 +9,14 @@ public class DslModel {
 
     private String name;
     private String type;
+    private String role;
+    private String goal;
+    private String task;
     private String requirement;
     private List<String> modules = new ArrayList<>();
+    private List<DslFlowStep> flow = new ArrayList<>();
     private Map<String, String> constraints = new LinkedHashMap<>();
+    private Map<String, Object> metadata = new LinkedHashMap<>();
     private String outputFormat;
 
     public DslModel() {
@@ -43,6 +48,30 @@ public class DslModel {
         this.type = type;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getGoal() {
+        return goal;
+    }
+
+    public void setGoal(String goal) {
+        this.goal = goal;
+    }
+
+    public String getTask() {
+        return task;
+    }
+
+    public void setTask(String task) {
+        this.task = task;
+    }
+
     public String getRequirement() {
         return requirement;
     }
@@ -59,12 +88,28 @@ public class DslModel {
         this.modules = modules;
     }
 
+    public List<DslFlowStep> getFlow() {
+        return flow;
+    }
+
+    public void setFlow(List<DslFlowStep> flow) {
+        this.flow = flow;
+    }
+
     public Map<String, String> getConstraints() {
         return constraints;
     }
 
     public void setConstraints(Map<String, String> constraints) {
         this.constraints = constraints;
+    }
+
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata;
     }
 
     public String getOutputFormat() {

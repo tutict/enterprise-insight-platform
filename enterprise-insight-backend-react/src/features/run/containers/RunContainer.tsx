@@ -1,5 +1,5 @@
-import { useFlowData } from '../../../components/flow/useFlowData'
-import { useRunPage } from '../../../hooks/useRunPage'
+import { useFlowData } from '../hooks/useFlowData'
+import { useRunPage } from '../hooks/useRunPage'
 import RunWorkspace from '../components/RunWorkspace'
 
 export default function RunContainer() {

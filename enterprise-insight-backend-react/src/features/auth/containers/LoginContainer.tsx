@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useLoginPage } from '../../../hooks/useLoginPage'
+import { useLoginPage } from '../hooks/useLoginPage'
 import LoginForm from '../components/LoginForm'
 
 export default function LoginContainer() {

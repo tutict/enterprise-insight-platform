@@ -31,6 +31,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             "/api/compiler", List.of(RoleConstants.ANALYST),
             "/api/agent-adapter", List.of(RoleConstants.ANALYST),
             "/api/orchestrator", List.of(RoleConstants.ANALYST),
+            "/api/graph", List.of(RoleConstants.ANALYST),
             "/api/ai", List.of(RoleConstants.ANALYST)
     );
 

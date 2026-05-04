@@ -1,5 +1,5 @@
-import StatusBadge from '../../../components/StatusBadge'
-import type { RunRecord } from '../../../store/types'
+import StatusBadge from '../../../shared/components/StatusBadge'
+import type { RunRecord } from '../../run/model/runEvent'
 
 type RunListProps = {
   runs: RunRecord[]

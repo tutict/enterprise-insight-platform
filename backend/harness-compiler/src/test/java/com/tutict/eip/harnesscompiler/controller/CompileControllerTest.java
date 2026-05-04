@@ -76,4 +76,39 @@ class CompileControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").exists());
     }
+
+    @Test
+    void shouldCompilePromptFromGraph() throws Exception {
+        Map<String, Object> start = new LinkedHashMap<>();
+        start.put("id", "start");
+        start.put("label", "start");
+        start.put("type", "start");
+
+        Map<String, Object> llm = new LinkedHashMap<>();
+        llm.put("id", "generate");
+        llm.put("label", "generate");
+        llm.put("type", "llm");
+        llm.put("config", Map.of("model", "llama3.1", "prompt", "Generate API code"));
+
+        Map<String, Object> edge = new LinkedHashMap<>();
+        edge.put("id", "start-generate");
+        edge.put("source", "start");
+        edge.put("target", "generate");
+        edge.put("condition", "success");
+
+        Map<String, Object> graph = new LinkedHashMap<>();
+        graph.put("id", "graph-test");
+        graph.put("name", "Graph Test");
+        graph.put("startNodeId", "start");
+        graph.put("nodes", List.of(start, llm));
+        graph.put("edges", List.of(edge));
+
+        mockMvc.perform(post("/api/compiler/from-graph")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(graph)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.dsl.type").value("workflow-graph"))
+                .andExpect(jsonPath("$.dsl.flow[1].type").value("llm"))
+                .andExpect(jsonPath("$.prompt").value("ROLE\nGOAL\nMODULES\nCONSTRAINTS\nOUTPUT FORMAT"));
+    }
 }

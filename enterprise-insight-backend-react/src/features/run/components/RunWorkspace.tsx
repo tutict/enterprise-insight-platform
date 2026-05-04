@@ -1,11 +1,12 @@
 import type { Edge } from '@xyflow/react'
-import CodeOutput from '../../../components/CodeOutput'
-import ExecutionTimeline from '../../../components/ExecutionTimeline'
-import FlowCanvas from '../../../components/flow/FlowCanvas'
-import type { WorkflowNode } from '../../../components/flow/FlowNodeComponent'
-import YamlEditor from '../../../components/YamlEditor'
-import type { OrchestratorRunResponse } from '../../../api/types'
-import type { ExecutionPhase, SavedDsl, TimelineStep } from '../../../store/types'
+import type { OrchestratorRunResponse } from '../../../api/types/orchestrator.types'
+import YamlEditor from '../../dsl/components/YamlEditor'
+import type { SavedDsl } from '../../history/store/historyTypes'
+import type { ExecutionPhase, RunConnectionState, RunStatus, StepKey, TimelineStep } from '../model/runEvent'
+import type { WorkflowNode } from './flow/FlowNodeComponent'
+import FlowCanvas from './flow/FlowCanvas'
+import CodeOutput from './CodeOutput'
+import ExecutionTimeline from './ExecutionTimeline'
 
 type RunWorkspaceProps = {
   dslText: string
@@ -25,12 +26,21 @@ type RunWorkspaceProps = {
   savedDsls: SavedDsl[]
   selectDsl: (id: string) => void
   run: () => void
+  controls: {
+    pause: () => void
+    resume: () => void
+    cancel: () => void
+    retryStep: (step: StepKey) => void
+  }
   workflow: {
     nodes: WorkflowNode[]
     edges: Edge[]
   }
   runState: {
     phase: ExecutionPhase
+    status: RunStatus
+    connectionState: RunConnectionState
+    lastEventId?: string
     isRunning: boolean
     error: string
     result: OrchestratorRunResponse | null
@@ -47,9 +57,15 @@ export default function RunWorkspace({
   savedDsls,
   selectDsl,
   run,
+  controls,
   workflow,
   runState,
 }: RunWorkspaceProps) {
+  const canPause = runState.status === 'running'
+  const canResume = runState.status === 'paused'
+  const canCancel = runState.status === 'running' || runState.status === 'paused'
+  const canRetryVerify = runState.steps.some((step) => step.key === 'verify' && step.status === 'fail')
+
   return (
     <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_430px]">
       <section className="space-y-5">
@@ -67,6 +83,35 @@ export default function RunWorkspace({
             >
               {runState.isRunning ? 'Running...' : 'Run'}
             </button>
+          </div>
+
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-console-950 px-3 py-2">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+              <span className="rounded-md border border-white/10 px-2 py-1">runtime: {runState.status}</span>
+              <span className="rounded-md border border-white/10 px-2 py-1">stream: {runState.connectionState}</span>
+              <span className="rounded-md border border-white/10 px-2 py-1">
+                event: {runState.lastEventId ?? '-'}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={controls.pause} disabled={!canPause}>
+                Pause
+              </button>
+              <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={controls.resume} disabled={!canResume}>
+                Resume
+              </button>
+              <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={controls.cancel} disabled={!canCancel}>
+                Cancel
+              </button>
+              <button
+                className="btn-secondary px-2 py-1 text-xs"
+                type="button"
+                onClick={() => controls.retryStep('verify')}
+                disabled={!canRetryVerify}
+              >
+                Retry verify
+              </button>
+            </div>
           </div>
 
           <div className="mb-4 grid gap-3 md:grid-cols-4">
@@ -121,7 +166,7 @@ export default function RunWorkspace({
 
           {runState.isRunning ? (
             <div className="mt-4 rounded-lg border border-cyan-400/30 bg-cyan-950/60 p-3 text-sm text-cyan-100">
-              Run request is in progress. Timeline status will update when the orchestrator returns.
+              Run request is in progress. Timeline status updates as runtime events are consumed.
             </div>
           ) : null}
 

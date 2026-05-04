@@ -1,7 +1,7 @@
-import CodeBlock from '../../../components/CodeBlock'
-import YamlEditor from '../../../components/YamlEditor'
-import type { CompileResponse } from '../../../api/types'
-import type { AsyncStatus } from '../../../store/runStore'
+import CodeBlock from '../../../shared/components/CodeBlock'
+import type { CompileResponse } from '../../../api/types/compiler.types'
+import type { AsyncStatus } from '../store/dslStore'
+import YamlEditor from './YamlEditor'
 
 type DslEditorWorkspaceProps = {
   name: string

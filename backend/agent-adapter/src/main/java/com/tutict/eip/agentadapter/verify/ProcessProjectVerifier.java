@@ -15,6 +15,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +25,27 @@ public class ProcessProjectVerifier implements ProjectVerifier {
 
     private static final Logger log = LoggerFactory.getLogger(ProcessProjectVerifier.class);
     private static final int MAX_OUTPUT_CHARS = 12000;
+    private static final Set<String> ALLOWED_EXECUTABLES = Set.of(
+            "mvn",
+            "mvnw",
+            "mvnw.cmd",
+            "gradle",
+            "gradlew",
+            "gradlew.bat",
+            "npm",
+            "pnpm",
+            "yarn"
+    );
+    private static final List<String> DISALLOWED_ARGUMENT_TOKENS = List.of(
+            "..",
+            "|",
+            "&",
+            ";",
+            ">",
+            "<",
+            "$(",
+            "`"
+    );
 
     private final OllamaProperties properties;
 
@@ -48,6 +71,7 @@ public class ProcessProjectVerifier implements ProjectVerifier {
         if (command == null || command.isEmpty()) {
             throw new AgentAdapterException("Verification command must not be empty");
         }
+        validateCommand(command);
         String commandText = String.join(" ", command);
         Instant startedAt = Instant.now();
         log.info("Running verification command projectRoot={} command={}", projectRoot, commandText);
@@ -95,6 +119,36 @@ public class ProcessProjectVerifier implements ProjectVerifier {
             throw new AgentAdapterException("targetDirectory escapes outputRoot: " + targetDirectory);
         }
         return projectRoot;
+    }
+
+    private void validateCommand(List<String> command) {
+        String executable = normalizeExecutable(command.getFirst());
+        if (!ALLOWED_EXECUTABLES.contains(executable)) {
+            throw new AgentAdapterException("Verification command executable is not allowed: " + command.getFirst());
+        }
+
+        for (String argument : command) {
+            if (argument == null || argument.isBlank()) {
+                throw new AgentAdapterException("Verification command arguments must not be blank");
+            }
+            String normalized = argument.toLowerCase(Locale.ROOT);
+            for (String token : DISALLOWED_ARGUMENT_TOKENS) {
+                if (normalized.contains(token)) {
+                    throw new AgentAdapterException("Verification command contains a disallowed token: " + token);
+                }
+            }
+        }
+    }
+
+    private String normalizeExecutable(String executable) {
+        String normalized = executable.trim().replace('\\', '/').toLowerCase(Locale.ROOT);
+        if (normalized.startsWith("./") && normalized.indexOf('/', 2) < 0) {
+            return normalized.substring(2);
+        }
+        if (normalized.contains("/")) {
+            return normalized;
+        }
+        return normalized;
     }
 
     private String readStream(java.io.InputStream inputStream) {

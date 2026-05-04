@@ -12,6 +12,8 @@ import java.util.Map;
 
 public class OrchestratorRunRequest {
 
+    private String runId;
+
     @NotBlank
     private String requirement;
 
@@ -28,6 +30,14 @@ public class OrchestratorRunRequest {
     private int maxRepairRounds = 2;
 
     private Map<String, Object> options = new LinkedHashMap<>();
+
+    public String getRunId() {
+        return runId;
+    }
+
+    public void setRunId(String runId) {
+        this.runId = runId;
+    }
 
     public String getRequirement() {
         return requirement;

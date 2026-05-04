@@ -1,4 +1,4 @@
-import { useSettingsPage } from '../../../hooks/useSettingsPage'
+import { useSettingsPage } from '../hooks/useSettingsPage'
 import SettingsView from '../components/SettingsView'
 
 export default function SettingsContainer() {

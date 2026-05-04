@@ -1,113 +1,105 @@
-# Enterprise Insight Platform
+# Enterprise Insight Platform / 企业洞察平台
 
-Enterprise Insight Platform is an AI workflow engineering platform for compiling requirements into structured DSL, prompts, executable graph workflows, and generated projects. It is designed as a controllable harness around LLM execution: the UI builds workflows, backend services compile and execute them, and the runtime emits observable events for debugging and profiling.
+## 项目简介 / Project Introduction
 
-## Positioning
+将 AI Workflow Builder 与 Agent 执行能力引入 Enterprise Insight Platform，并围绕需求编译、可视化编排、图运行时与自动修复链路重新完善工程基线，补齐前端控制台、后端编译与编排服务、SSE 事件流、测试体系、压测脚本、安全策略与运维文档，提升项目完整性、可观测性与交付能力。项目基于 Spring Boot、React、React Flow、Zustand、k6、Ollama、Qdrant 与 Docker Compose 实现，支持 DSL 到 Prompt 编译、Graph Builder 可视化编排、条件分支与循环执行、运行时事件推送、容器化部署与生产环境扩展。
 
-This project is not a generic chat application. It is an engineering control plane for AI-assisted delivery:
+Enterprise Insight Platform brings AI Workflow Builder and Agent execution capabilities into a deployable engineering baseline. It covers requirement compilation, visual graph orchestration, graph runtime execution, and auto-repair workflows, while completing the frontend console, backend compiler/orchestrator services, SSE event streaming, tests, load scripts, security controls, and operation documentation. The platform is built with Spring Boot, React, React Flow, Zustand, k6, Ollama, Qdrant, and Docker Compose. It supports DSL-to-prompt compilation, visual graph building, conditional branches, bounded loops, runtime event streaming, containerized deployment, and production-oriented extension.
 
-- Requirement -> DSL -> prompt -> generated project.
-- Visual graph builder -> validated graph definition -> event-driven graph runtime.
-- Agent adapter -> file writer -> verification command runner -> auto-repair loop.
-- Gateway authentication and role checks around compiler, graph, orchestrator, agent, and AI APIs.
+## 项目定位 / Positioning
 
-The main design goal is reproducibility: every generated artifact should be traced back to a DSL model, prompt, graph definition, run id, verification command, and emitted runtime event.
+本项目不是普通聊天应用，而是面向 AI 辅助交付的工程控制台。系统将自然语言需求转换为结构化 DSL 和 Harness Prompt，通过 Agent Adapter 生成项目文件，并使用验证命令与自动修复循环提高生成结果的可控性。
 
-## Architecture
+This project is not a generic chat application. It is an engineering control plane for AI-assisted delivery. It transforms natural-language requirements into structured DSL and Harness Prompts, generates project files through an Agent Adapter, and improves controllability through verification commands and auto-repair loops.
+
+核心链路 / Core flow:
 
 ```text
-React Console
-  |-- DSL Editor
-  |-- Graph Builder (React Flow)
-  |-- Run Console / Event Timeline
+Requirement / 需求
+  -> DSL Compiler / DSL 编译
+  -> Prompt Compiler / Prompt 编译
+  -> Orchestrator / 编排服务
+  -> Agent Adapter / Agent 适配器
+  -> Generated Project / 生成项目
+  -> Verification and Repair / 验证与修复
+```
+
+## 架构图 / Architecture
+
+```text
+React Console / 前端控制台
+  |-- DSL Editor / DSL 编辑器
+  |-- Graph Builder / 可视化图编排
+  |-- Run Console / 运行控制台
   |
   v
-Gateway Service :8080
-  |-- JWT auth
-  |-- role routing
+Gateway Service :8080 / 网关服务
+  |-- JWT Auth / JWT 鉴权
+  |-- Role Routing / 角色路由
   |
-  +--> Auth Service :808x
-  +--> Metadata Service
-  +--> Harness Compiler
+  +--> Auth Service / 认证服务
+  +--> Metadata Service / 元数据服务
+  +--> Harness Compiler / 编译服务
   |      |-- RuleBasedDslParser
   |      |-- GraphToDslCompiler
   |      |-- PromptCompiler
-  |      '-- Prompt injection guard
+  |      '-- Prompt Injection Guard / Prompt 注入防护
   |
-  +--> Orchestrator Service :8091
-  |      |-- Orchestrator pipeline
-  |      |-- Graph compile API
-  |      |-- GraphExecutor
-  |      |-- SSE GraphEvent stream
-  |      '-- Experiment assignment kernel
+  +--> Orchestrator Service :8091 / 编排服务
+  |      |-- Pipeline Runtime / 流水线运行时
+  |      |-- Graph Compile API / 图编译接口
+  |      |-- GraphExecutor / 图执行器
+  |      |-- SSE GraphEvent Stream / SSE 事件流
+  |      '-- Experiment Assignment / AB 实验分配
   |
-  '--> Agent Adapter
-         |-- Ollama adapter
-         |-- generated file writers
-         |-- verifyCommand allowlist
-         '-- auto-repair loop
+  '--> Agent Adapter / Agent 适配器
+         |-- Ollama Adapter / Ollama 适配
+         |-- File Writers / 文件写入器
+         |-- verifyCommand Allowlist / 验证命令白名单
+         '-- Auto Repair Loop / 自动修复循环
 ```
 
-## Core Capabilities
+## 核心能力 / Core Capabilities
 
-### Debug
+- Debug / 调试：Graph runtime 推送 `GRAPH_RUN_STARTED`、`NODE_STARTED`、`NODE_SUCCEEDED`、`NODE_FAILED`、`EDGE_TRAVERSED`、`GRAPH_RUN_COMPLETED` 和 `GRAPH_RUN_FAILED` 事件，前端只消费事件并渲染状态，不承载执行逻辑。
+- Profiling / 性能分析：k6 脚本输出 latency、RPS 和 error rate；运行事件可进一步扩展为节点级耗时分析。
+- AB Test / 实验能力：`ExperimentAssignmentService` 基于 `experimentKey` 与 `subjectKey` 做确定性加权分配，可用于 Prompt 模板、模型路由或修复策略实验。
+- Security / 安全：Gateway 统一鉴权，Prompt 输入做隔离与清洗，`verifyCommand` 使用白名单，生成文件只能写入受控目录。
 
-- Graph runtime emits `GRAPH_RUN_STARTED`, `NODE_STARTED`, `NODE_SUCCEEDED`, `NODE_FAILED`, `EDGE_TRAVERSED`, `GRAPH_RUN_COMPLETED`, and `GRAPH_RUN_FAILED`.
-- SSE stream endpoint supports replay with `Last-Event-ID` or `lastEventId`.
-- The React runtime store renders node and edge state from events only; execution logic stays in Spring Boot.
-- API contract tests lock response envelope shape for orchestrator and graph APIs.
+- Debug: the graph runtime emits lifecycle events, and the frontend renders state from events without owning execution logic.
+- Profiling: k6 reports latency, RPS, and error rate; runtime events can be extended into node-level duration metrics.
+- AB Test: `ExperimentAssignmentService` provides deterministic weighted assignment for prompt templates, model routing, or repair policies.
+- Security: gateway authentication, prompt input isolation, verify command allowlists, and file-write sandboxing are implemented.
 
-### Profiling
+## 服务与接口 / Services and APIs
 
-- k6 load script reports latency, RPS, and error rate for compiler and graph runtime endpoints.
-- Graph execution events expose node and edge traversal, making per-node timing instrumentation straightforward.
-- Verification command results retain exit code, timeout status, stdout/stderr, and duration.
-
-### AB Test / Experiment
-
-- `ExperimentAssignmentService` provides deterministic weighted assignment by `experimentKey` and `subjectKey`.
-- Variant assignment is stable for the same subject, which supports prompt template experiments, model routing, or repair-policy comparisons.
-- Experiment tests cover deterministic assignment, zero-weight variants, and invalid definitions.
-
-## Services
-
-| Service | Responsibility | Key APIs |
+| 服务 / Service | 责任 / Responsibility | 核心接口 / Key APIs |
 | --- | --- | --- |
-| `gateway-service` | JWT auth, role enforcement, service routing | `/api/**` |
-| `auth-service` | demo login/profile and JWT issue | `POST /api/auth/login` |
-| `harness-compiler` | requirement/graph to DSL and prompt | `POST /api/compiler/compile`, `POST /api/compiler/from-graph` |
-| `orchestrator-service` | compile -> generate -> verify pipeline and graph runtime | `POST /api/orchestrator/run`, `POST /api/graph/compile`, `POST /api/graph/run`, `GET /api/graph/run/stream/{runId}` |
-| `agent-adapter` | LLM call, project writing, verification, repair loop | `POST /api/agent-adapter/**` |
+| `gateway-service` | JWT 鉴权、角色校验、服务路由 / JWT auth, role checks, routing | `/api/**` |
+| `auth-service` | 登录与 Token 签发 / Login and token issuing | `POST /api/auth/login` |
+| `harness-compiler` | 需求或图编译为 DSL 与 Prompt / Compile requirements or graphs into DSL and prompts | `POST /api/compiler/compile`, `POST /api/compiler/from-graph` |
+| `orchestrator-service` | 编排执行、Graph runtime、SSE 事件 / Orchestration, graph runtime, SSE events | `POST /api/orchestrator/run`, `POST /api/graph/compile`, `POST /api/graph/run`, `GET /api/graph/run/stream/{runId}` |
+| `agent-adapter` | LLM 调用、文件写入、验证与修复 / LLM calls, file writing, verification, repair | `POST /api/agent-adapter/**` |
 
-## Quick Start
+## 快速启动 / Quick Start
 
-### Prerequisites
+环境要求 / Prerequisites:
 
 - Java 21+
 - Maven 3.9+
 - Node.js 20+
 - npm
-- Optional: k6 for load testing
-- Optional: Ollama if running real local LLM generation
+- k6, for load testing / 用于压测
+- Ollama, optional for local LLM execution / 可选，用于本地模型执行
 
-### Backend
-
-From the repository root:
+后端测试 / Backend tests:
 
 ```powershell
 cd backend
 mvn test
 ```
 
-Run the platform with the project scripts:
-
-```powershell
-.\scripts\run-harness.ps1
-```
-
-The gateway defaults to `http://localhost:8080`. The orchestrator service defaults to port `8091`.
-
-### Frontend
+前端启动 / Frontend dev server:
 
 ```powershell
 cd enterprise-insight-backend-react
@@ -115,11 +107,7 @@ npm install
 npm run dev -- --host 127.0.0.1
 ```
 
-Open the printed Vite URL and navigate to `/graph` for the visual graph builder.
-
-### Authentication
-
-Login through the gateway:
+登录 / Login:
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
@@ -127,62 +115,16 @@ curl -X POST http://localhost:8080/api/auth/login \
   -d '{"username":"admin","password":"admin"}'
 ```
 
-Use `data.token` as `Authorization: Bearer <token>` for protected APIs.
+## 测试体系 / Test Strategy
 
-## Testing
+当前测试覆盖 / Current coverage:
 
-### Unit Tests
+- Unit tests / 单元测试：compiler、orchestrator、agent-adapter、experiment assignment。
+- Integration tests / 集成测试：`PipelineIntegrationTest` 覆盖 requirement -> DSL -> Prompt -> Orchestrator -> Agent Adapter -> File Writer -> Verifier。
+- API contract tests / API 契约测试：compiler、orchestrator、graph runtime 接口响应结构。
+- Security tests / 安全测试：JWT 鉴权、Prompt injection 防护、verifyCommand 限制、文件写入路径限制。
 
-Run all backend tests:
-
-```powershell
-cd backend
-mvn test
-```
-
-Coverage added in this project:
-
-- Orchestrator: service-level compile-before-agent execution and full pipeline integration.
-- Compiler: DSL parsing, prompt compilation, graph-to-DSL prompt compilation, prompt template rendering, prompt injection guard.
-- Experiment: deterministic weighted variant assignment.
-- Agent adapter: auto-repair loop, Ollama adapter behavior, generated file path sandboxing, verifyCommand restrictions.
-- Gateway: JWT auth, role checks, graph route protection.
-
-### Integration Tests
-
-`PipelineIntegrationTest` exercises the local pipeline without a real LLM:
-
-```text
-requirement
-  -> RuleBasedDslParser
-  -> PromptCompiler
-  -> DefaultOrchestratorService
-  -> DefaultAutoRepairGenerationService
-  -> MarkerProjectFileWriter
-  -> ProjectVerifier
-```
-
-It verifies DSL module selection, prompt security controls, generated file writing, and verification command propagation.
-
-### API Contract Tests
-
-Contract tests lock the current API surface:
-
-- `OrchestratorControllerContractTest`
-  - `POST /api/orchestrator/run`
-  - validates API envelope and bad request shape.
-- `GraphApiContractTest`
-  - `POST /api/graph/compile`
-  - `POST /api/graph/run`
-  - validates graph run response and invalid graph rejection.
-- `CompileControllerTest`
-  - `POST /api/compiler/compile`
-  - `POST /api/compiler/from-graph`
-  - validates DSL/prompt response shape and validation errors.
-
-### Current Verification Result
-
-Latest local verification in this workspace:
+最新本地验证 / Latest local verification:
 
 ```text
 mvn test                         PASS
@@ -190,34 +132,22 @@ npm run build                    PASS
 k6 version                       PASS - k6.exe v1.7.1
 ```
 
-The frontend build may require normal OS execution permissions for Vite/esbuild on Windows.
+## 性能结果 / Performance Results
 
-## Performance
-
-k6 script:
+k6 脚本 / k6 script:
 
 ```text
 scripts/k6/graph-runtime-load.js
 ```
 
-Run against the gateway:
-
-```powershell
-k6 run scripts/k6/graph-runtime-load.js
-```
-
-Common parameters:
+Gateway 模式 / Gateway mode:
 
 ```powershell
 $env:BASE_URL="http://localhost:8080"
-$env:VUS="25"
-$env:RAMP_UP="30s"
-$env:STEADY="2m"
-$env:RAMP_DOWN="30s"
 k6 run scripts/k6/graph-runtime-load.js
 ```
 
-Run directly against `orchestrator-service` when gateway/Nacos is not running:
+直连 orchestrator 模式 / Direct orchestrator mode:
 
 ```powershell
 $env:BASE_URL="http://localhost:8091"
@@ -230,28 +160,7 @@ $env:RAMP_DOWN="20s"
 k6 run scripts/k6/graph-runtime-load.js
 ```
 
-Use an existing token instead of login:
-
-```powershell
-$env:TOKEN="<jwt>"
-k6 run scripts/k6/graph-runtime-load.js
-```
-
-Enable the heavy orchestrator pipeline path only when the agent adapter and model runtime are ready:
-
-```powershell
-$env:RUN_ORCHESTRATOR="true"
-k6 run scripts/k6/graph-runtime-load.js
-```
-
-The script prints and writes:
-
-- latency: `avgMs`, `p95Ms`, `p99Ms`
-- RPS: `http_reqs.rate`
-- error rate: `http_req_failed.rate`
-- output file: `performance-results.json`
-
-Current local performance execution result:
+本地基线结果 / Local baseline result:
 
 ```text
 date                             2026-05-04
@@ -272,54 +181,33 @@ latency.p99Ms                    3.18
 thresholds                       PASS
 ```
 
-Default thresholds:
+## 安全策略 / Security Policy
 
-```text
-http_req_failed < 1%
-http_req_duration p95 < 800ms
-http_req_duration p99 < 1500ms
-graph_compile_latency p95 < 500ms
-graph_run_latency p95 < 800ms
-compiler_latency p95 < 700ms
-contract_failures < 1%
-```
+- 受保护接口必须通过 Gateway JWT 鉴权 / Protected APIs require Gateway JWT authentication.
+- `ANALYST` 角色可访问 compiler、graph、orchestrator、agent、metadata 与 AI 路由 / The `ANALYST` role is required for compiler, graph, orchestrator, agent, metadata, and AI routes.
+- Prompt 输入被视为不可信数据，并进行注入语义清洗 / Prompt inputs are treated as untrusted data and sanitized.
+- `verifyCommand` 仅允许 Maven、Gradle、npm、pnpm、Yarn 等构建测试命令 / `verifyCommand` is allowlisted to build and test executables such as Maven, Gradle, npm, pnpm, and Yarn.
+- 生成文件路径必须保持在 `agent.ollama.output-root` 下 / Generated file paths must stay under `agent.ollama.output-root`.
 
-## Security Testing
+详细说明见 / See also: [docs/security-testing.md](docs/security-testing.md).
 
-Security test details are documented in [docs/security-testing.md](docs/security-testing.md).
+## Graph Runtime 约束 / Graph Runtime Contract
 
-Implemented controls:
+- 必须且只能有一个 `start` 节点 / Exactly one `start` node is required.
+- 至少需要一个 `end` 节点 / At least one `end` node is required.
+- `condition` 节点必须有 success 与 failed/failure 分支 / Condition nodes must define success and failed/failure branches.
+- 移除带 `maxIterations` 的循环边后，图必须是 DAG / The graph must be a DAG after bounded loop edges are removed.
+- 循环边必须设置 `maxIterations` / Loop edges must define `maxIterations`.
 
-- Gateway rejects protected APIs without JWT.
-- Gateway enforces `ANALYST` role for compiler, graph, orchestrator, agent, metadata, and AI routes.
-- Prompt compiler isolates untrusted input and neutralizes common instruction override and prompt exfiltration phrases.
-- `verifyCommand` execution is restricted to build/test executable allowlists.
-- Shell interpreters, shell-control tokens, and path traversal are rejected before `ProcessBuilder` starts.
-- Generated files must stay inside `agent.ollama.output-root` and the selected project directory.
+## 路线图 / Roadmap
 
-## Graph Runtime Contract
+- 持久化 graph definition 与 run event log / Persist graph definitions and run event logs.
+- 增加节点级耗时指标与 profiling 导出 / Add node-level timing metrics and profiling export.
+- 将实验分配接入 orchestrator request metadata / Promote experiment assignment into orchestrator request metadata.
+- 增加 OpenAPI 生成与 schema diff contract checks / Add OpenAPI generation and schema-diff contract checks.
+- 发布 CI 性能基线 / Publish CI performance baselines.
+- 增强租户级 verifyCommand policy / Add tenant-level verifyCommand policy profiles.
 
-Graph definitions must satisfy:
-
-- exactly one `start` node
-- at least one `end` node
-- condition nodes must expose success and failed/failure branches
-- the graph must be a DAG after bounded loop edges are removed
-- loop edges must use `maxIterations`
-
-The backend owns execution. The UI only emits graph definitions and renders GraphEvents.
-
-## Roadmap
-
-- Persist graph definitions and run event logs.
-- Add per-node duration metrics and profiling export.
-- Promote experiment assignments into orchestrator request metadata.
-- Add OpenAPI generation and schema diff contract checks.
-- Add k6 cloud/CI performance baseline publishing.
-- Add containerized integration tests for gateway + compiler + orchestrator.
-- Add policy-driven verifyCommand profiles per tenant.
-- Add richer prompt injection detection with structured risk scoring.
-
-## License
+## License / 许可证
 
 MIT

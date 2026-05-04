@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Component } from 'react'
+import { logUiError } from '../api/uiTelemetry'
 
 type ErrorBoundaryProps = {
   children: ReactNode
@@ -30,11 +31,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       occurredAt: new Date().toISOString(),
     }
 
-    fetch('/api/orchestrator/logs/ui-error', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }).catch(() => undefined)
+    logUiError(payload).catch(() => undefined)
   }
 
   handleReload = () => {

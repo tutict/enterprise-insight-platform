@@ -23,5 +23,5 @@ export type RunRecord = {
   model: string
   createdAt: string
   response: OrchestratorRunResponse
-  timeline: TimelineStep[]
+  steps: TimelineStep[]
 }

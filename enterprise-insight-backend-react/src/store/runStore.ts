@@ -11,16 +11,19 @@ import { useHistoryStore } from './historyStore'
 import { useNotificationStore } from './notifications'
 import type { RunRecord, TimelineStep } from './types'
 
+export type AsyncStatus = 'idle' | 'loading' | 'success' | 'error'
+export type RunStatus = 'idle' | 'running' | 'success' | 'error'
+
 type RunState = {
   dslText: string
   prompt: string
   compileResult: CompileResponse | null
-  compileLoading: boolean
+  compileStatus: AsyncStatus
   compileError: string
-  runLoading: boolean
-  runError: string
-  runResult: OrchestratorRunResponse | null
-  timeline: TimelineStep[]
+  status: RunStatus
+  error: string
+  result: OrchestratorRunResponse | null
+  steps: TimelineStep[]
   setDslText: (value: string) => void
   loadDsl: (value: string) => void
   compileCurrentDsl: () => Promise<void>
@@ -67,7 +70,7 @@ export const createInitialTimeline = (): TimelineStep[] => [
   },
 ]
 
-const timelineFromResponse = (response: OrchestratorRunResponse): TimelineStep[] => {
+const stepsFromResponse = (response: OrchestratorRunResponse): TimelineStep[] => {
   const generation = response.generation
   const verification = generation.finalVerificationResult
   return [
@@ -98,41 +101,41 @@ export const useRunStore = create<RunState>()(
       dslText: defaultDsl,
       prompt: '',
       compileResult: null,
-      compileLoading: false,
+      compileStatus: 'idle',
       compileError: '',
-      runLoading: false,
-      runError: '',
-      runResult: null,
-      timeline: createInitialTimeline(),
+      status: 'idle',
+      error: '',
+      result: null,
+      steps: createInitialTimeline(),
       setDslText: (value) => set({ dslText: value }),
       loadDsl: (value) =>
         set({
           dslText: value,
           compileError: '',
-          runError: '',
+          error: '',
         }),
       compileCurrentDsl: async () => {
         const dsl = get().dslText
         if (!dsl.trim()) {
           notify('error', 'DSL is empty. Add YAML before compiling.')
-          set({ compileError: 'DSL is empty.' })
+          set({ compileStatus: 'error', compileError: 'DSL is empty.' })
           return
         }
         notify('info', 'Compiling DSL...')
-        set({ compileLoading: true, compileError: '', prompt: '' })
+        set({ compileStatus: 'loading', compileError: '', prompt: '' })
         try {
           const result = await compileDsl(dsl)
           set({
             compileResult: result,
             prompt: result.prompt,
-            compileLoading: false,
+            compileStatus: 'success',
           })
           notify('success', 'DSL compiled successfully.')
         } catch (err) {
           const message = err instanceof Error ? err.message : 'Compile failed'
           set({
             compileError: message,
-            compileLoading: false,
+            compileStatus: 'error',
           })
           notify('error', message)
         }
@@ -141,20 +144,20 @@ export const useRunStore = create<RunState>()(
         const dsl = get().dslText
         if (!dsl.trim()) {
           notify('error', 'DSL is empty. Add YAML before running.')
-          set({ runError: 'DSL is empty.' })
+          set({ status: 'error', error: 'DSL is empty.' })
           return
         }
         if (!params.targetDirectory.trim()) {
           notify('error', 'Target directory is required.')
-          set({ runError: 'Target directory is required.' })
+          set({ status: 'error', error: 'Target directory is required.' })
           return
         }
         notify('info', 'Run started.')
         set({
-          runLoading: true,
-          runError: '',
-          runResult: null,
-          timeline: [
+          status: 'running',
+          error: '',
+          result: null,
+          steps: [
             { key: 'compile', title: 'compile', status: 'running', detail: 'Sending DSL to compiler.' },
             { key: 'generate', title: 'generate', status: 'pending', detail: 'Waiting for compiled prompt.' },
             { key: 'verify', title: 'verify', status: 'pending', detail: 'Verification runs after generation.' },
@@ -168,7 +171,7 @@ export const useRunStore = create<RunState>()(
             verifyCommands: params.verifyCommands,
             maxRepairRounds: params.maxRepairRounds,
           })
-          const timeline = timelineFromResponse(response)
+          const steps = stepsFromResponse(response)
           const record: RunRecord = {
             id: response.runId,
             dsl,
@@ -176,14 +179,14 @@ export const useRunStore = create<RunState>()(
             model: params.model ?? '',
             createdAt: response.createdAt,
             response,
-            timeline,
+            steps,
           }
           useHistoryStore.getState().addRun(record)
           set({
-            runLoading: false,
-            runResult: response,
+            status: response.generation.successful ? 'success' : 'error',
+            result: response,
             prompt: response.harnessPrompt,
-            timeline,
+            steps,
           })
           notify(
             response.generation.successful ? 'success' : 'error',
@@ -194,9 +197,9 @@ export const useRunStore = create<RunState>()(
         } catch (err) {
           const message = err instanceof Error ? err.message : 'Run failed'
           set({
-            runLoading: false,
-            runError: message,
-            timeline: [
+            status: 'error',
+            error: message,
+            steps: [
               { key: 'compile', title: 'compile', status: 'fail', detail: message },
               { key: 'generate', title: 'generate', status: 'pending', detail: 'Generation did not start.' },
               { key: 'verify', title: 'verify', status: 'pending', detail: 'Verification did not start.' },

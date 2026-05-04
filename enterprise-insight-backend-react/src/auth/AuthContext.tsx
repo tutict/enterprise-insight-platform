@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
-import { apiRequest } from '../api/client'
-import { AuthContext, type LoginResponse } from './authContextValue'
+import { loginUser } from '../api/auth'
+import { AuthContext } from './authContextValue'
 import {
   clearStoredAuth,
   getStoredAuth,
@@ -38,10 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [auth])
 
   const login = async (username: string, password: string) => {
-    const data = await apiRequest<LoginResponse>('/api/auth/login', {
-      method: 'POST',
-      body: { username, password },
-    })
+    const data = await loginUser({ username, password })
 
     const nextAuth: StoredAuth = {
       token: data.token,

@@ -208,6 +208,45 @@ thresholds                       PASS
 - 发布 CI 性能基线 / Publish CI performance baselines.
 - 增强租户级 verifyCommand policy / Add tenant-level verifyCommand policy profiles.
 
-## License / 许可证
+## Quick Start
 
+Prerequisites:
+
+- Docker Desktop or Docker Engine with Docker Compose
+- Java 21+
+- Maven 3.9+
+- Node.js 20+
+- npm
+
+```bash
+git clone <repo-url>
+cd enterprise-insight-platform
+./scripts/dev.sh
+```
+
+Windows PowerShell:
+
+```powershell
+.\scripts\dev.ps1
+```
+
+The dev script starts Docker base services, backend Spring Boot services, and the React Vite dev server. Default addresses:
+
+```text
+Frontend             http://127.0.0.1:5173
+Gateway API          http://localhost:8080
+Orchestrator API     http://localhost:8091
+Qdrant               http://localhost:6333
+Ollama               http://localhost:11434
+```
+
+Login with `admin` / `admin`. Runtime logs are written to `runtime-logs/`.
+
+Stop Docker services when finished:
+
+```bash
+docker compose -f backend/compose.yaml down
+```
+
+## License / License
 MIT

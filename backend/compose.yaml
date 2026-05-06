@@ -2,16 +2,24 @@ services:
   nacos:
     image: nacos/nacos-server:v2.3.2
     container_name: eip-nacos
+    restart: unless-stopped
     environment:
       - MODE=standalone
       - JVM_XMS=256m
       - JVM_XMX=256m
     ports:
       - "8848:8848"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8848/nacos/v1/console/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   mysql:
     image: mysql:8.0
     container_name: eip-mysql
+    restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=root1234
       - MYSQL_DATABASE=eip
@@ -19,29 +27,59 @@ services:
     ports:
       - "3306:3306"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   redis:
     image: redis:7.2
     container_name: eip-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
 
   qdrant:
     image: qdrant/qdrant:v1.9.3
     container_name: eip-qdrant
+    restart: unless-stopped
     ports:
       - "6333:6333"
     volumes:
       - qdrant_storage:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:6333/healthz || wget -qO- http://localhost:6333/healthz >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   ollama:
     image: ollama/ollama:0.5.7
     container_name: eip-ollama
+    restart: unless-stopped
     ports:
       - "11434:11434"
     volumes:
       - ollama_storage:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 
 volumes:
+  mysql_data:
   qdrant_storage:
   ollama_storage:

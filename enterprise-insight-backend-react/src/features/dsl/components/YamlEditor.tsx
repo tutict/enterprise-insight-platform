@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNotificationStore } from '../../../store/uiStore'
 
 type YamlEditorProps = {
@@ -61,8 +62,9 @@ export default function YamlEditor({
   value,
   onChange,
   minHeight = '420px',
-  placeholder = 'Enter YAML DSL...',
+  placeholder,
 }: YamlEditorProps) {
+  const { t } = useTranslation('dsl')
   const [scroll, setScroll] = useState({ left: 0, top: 0 })
   const pushNotification = useNotificationStore((state) => state.push)
   const lines = useMemo(() => value.split('\n'), [value])
@@ -83,7 +85,7 @@ export default function YamlEditor({
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'DSL editor is empty.',
+        message: t('editor.emptyEditor'),
       })
       return
     }
@@ -93,13 +95,13 @@ export default function YamlEditor({
       pushNotification({
         id: crypto.randomUUID(),
         type: 'success',
-        message: 'DSL copied to clipboard.',
+        message: t('editor.copied'),
       })
     } catch {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'Copy failed. Check browser clipboard permission.',
+        message: t('common:clipboard.copyFailed'),
       })
     }
   }
@@ -109,9 +111,9 @@ export default function YamlEditor({
       className="overflow-hidden rounded-lg border border-white/10 bg-console-950 shadow-inner focus-within:border-teal-400/60 focus-within:ring-2 focus-within:ring-teal-400/10"
     >
       <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-console-900/80 px-3 py-2 pl-[4.75rem]">
-        <span className="text-xs font-medium text-slate-400">YAML editor</span>
+        <span className="text-xs font-medium text-slate-400">{t('editor.yamlEditor')}</span>
         <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={() => void copyDsl()}>
-          Copy DSL
+          {t('editor.copyDsl')}
         </button>
       </div>
       <div
@@ -137,7 +139,7 @@ export default function YamlEditor({
           className="relative z-10 block w-full resize-y overflow-auto whitespace-pre bg-transparent py-4 pb-12 pl-[4.75rem] pr-4 text-xs leading-6 text-transparent caret-teal-300 outline-none selection:bg-teal-400/25 placeholder:text-slate-600"
           style={{ minHeight }}
           value={value}
-          placeholder={placeholder}
+          placeholder={placeholder ?? t('editor.placeholder')}
           spellCheck={false}
           wrap="off"
           onChange={(event) => onChange(event.target.value)}
@@ -149,8 +151,8 @@ export default function YamlEditor({
           }
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-center justify-between border-t border-white/10 bg-console-900/90 px-3 py-2 pl-[4.75rem] text-xs text-slate-500">
-          <span>highlighting enabled</span>
-          <span>{editorStats.lines} lines / {editorStats.chars.toLocaleString()} chars</span>
+          <span>{t('editor.highlighting')}</span>
+          <span>{t('editor.stats', { lines: editorStats.lines, chars: editorStats.chars.toLocaleString() })}</span>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNotificationStore } from '../../../store/uiStore'
 import type { ExecutionPhase, RunRecord, StepState, TimelineStep } from '../../run/model/runEvent'
 import { useHistoryStore } from '../store/historyStore'
@@ -52,6 +53,7 @@ const normalizeRunRecord = (record: PersistedRunRecord | undefined) => {
 }
 
 export function useRunsPage() {
+  const { t } = useTranslation('run')
   const storedRuns = useHistoryStore((state) => state.runs) as PersistedRunRecord[]
   const selectedRunId = useHistoryStore((state) => state.selectedRunId)
   const selectStoredRun = useHistoryStore((state) => state.selectRun)
@@ -72,7 +74,7 @@ export function useRunsPage() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'Run record was not found.',
+        message: t('history.notFound'),
       })
       return
     }

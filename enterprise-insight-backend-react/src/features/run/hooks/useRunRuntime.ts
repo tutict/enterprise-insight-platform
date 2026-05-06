@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { runEngine } from '../engine/runEngine'
 import type { RunConfig, RunEngineConfig, RunRuntimeInput } from '../model/runConfig'
 import type { Execution, RunEvent, StepKey } from '../model/runEvent'
@@ -10,7 +11,7 @@ type RunRuntimeResult = {
   stale: boolean
 }
 
-const getErrorMessage = (err: unknown) => (err instanceof Error ? err.message : 'Run failed')
+const getErrorMessage = (err: unknown, fallback: string) => (err instanceof Error ? err.message : fallback)
 
 const createRunId = () => {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -21,6 +22,7 @@ const createRunId = () => {
 }
 
 export function useRunRuntime(config: RunConfig) {
+  const { t } = useTranslation('run')
   const dispatch = useRunStore((state) => state.dispatch)
   const activeRunIdRef = useRef<string | null>(null)
 
@@ -60,7 +62,7 @@ export function useRunRuntime(config: RunConfig) {
         consumeEvent({
           type: 'RUN_FAILED',
           runId: runId ?? undefined,
-          error: getErrorMessage(err),
+          error: getErrorMessage(err, t('run.failed')),
         })
       }
 
@@ -77,27 +79,27 @@ export function useRunRuntime(config: RunConfig) {
         stale: false,
       }
     },
-    [config, consumeEvent],
+    [config, consumeEvent, t],
   )
 
   const sendControl = useCallback(
     async (type: 'PAUSE' | 'RESUME' | 'CANCEL', explicitRunId?: string) => {
       const runId = explicitRunId ?? activeRunIdRef.current ?? useRunStore.getState().runId
       if (!runId) {
-        throw new Error('No active run to control.')
+        throw new Error(t('run.noActiveRunControl'))
       }
       await sendRunControl({ type, runId })
     },
-    [],
+    [t],
   )
 
   const retryStep = useCallback(async (step: StepKey, explicitRunId?: string) => {
     const runId = explicitRunId ?? activeRunIdRef.current ?? useRunStore.getState().runId
     if (!runId) {
-      throw new Error('No active run to retry.')
+      throw new Error(t('run.noActiveRunRetry'))
     }
     await sendRunControl({ type: 'RETRY_STEP', runId, step })
-  }, [])
+  }, [t])
 
   return {
     run,

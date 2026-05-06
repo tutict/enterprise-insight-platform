@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useNotificationStore } from '../../../store/uiStore'
 import { useAuth } from '../context/useAuth'
@@ -8,6 +9,7 @@ type LocationState = {
 }
 
 export function useLoginPage() {
+  const { t } = useTranslation('common')
   const { login, isAuthenticated } = useAuth()
   const pushNotification = useNotificationStore((state) => state.push)
   const navigate = useNavigate()
@@ -28,11 +30,11 @@ export function useLoginPage() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'success',
-        message: 'Signed in successfully.',
+        message: t('auth.signedIn'),
       })
       navigate(redirectPath, { replace: true })
     } catch (err) {
-      const message = (err as Error).message || 'Login failed'
+      const message = (err as Error).message || t('auth.failed')
       setError(message)
       pushNotification({
         id: crypto.randomUUID(),

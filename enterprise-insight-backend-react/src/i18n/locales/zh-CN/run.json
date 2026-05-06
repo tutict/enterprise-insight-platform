@@ -1,0 +1,105 @@
+{
+  "run": {
+    "title": "运行",
+    "execute": "运行",
+    "running": "运行中...",
+    "statusRuntime": "运行时：{{status}}",
+    "statusStream": "事件流：{{state}}",
+    "statusEvent": "事件：{{eventId}}",
+    "pause": "暂停",
+    "resume": "继续",
+    "cancel": "取消",
+    "retryVerify": "重试验证",
+    "savedDsl": "已保存 DSL",
+    "selectDsl": "选择 DSL",
+    "noSavedDsl": "暂无已保存 DSL",
+    "model": "模型",
+    "targetDirectory": "目标目录",
+    "repairRounds": "修复轮数",
+    "verifyCommand": "验证命令",
+    "inProgress": "运行请求处理中。时间线会随着运行时事件更新。",
+    "failed": "运行失败",
+    "executionResult": "执行结果",
+    "emptyOutput": "运行编排器后可查看生成代码输出。",
+    "workflowGraph": "工作流图",
+    "workflowPath": "编译 -> 生成 -> 验证 -> 修复",
+    "metadata": "运行元数据",
+    "runId": "运行 ID",
+    "attempts": "尝试次数",
+    "projectRoot": "项目根目录",
+    "requested": "运行已请求。",
+    "completedVerified": "运行完成并验证通过。",
+    "finishedWithStatus": "运行结束，状态：{{status}}",
+    "controlRequested": "已请求{{label}}。",
+    "retryStep": "重试{{step}}",
+    "noActiveRunControl": "没有可控制的活动运行。",
+    "noActiveRunRetry": "没有可重试的活动运行。",
+    "cancelled": "运行已取消。",
+    "unsupportedEvent": "不支持的事件：{{type}}",
+    "streamInterrupted": "执行事件流连接中断。",
+    "controlFailed": "{{label}}失败。"
+  },
+  "timeline": {
+    "title": "执行时间线",
+    "empty": "暂无执行步骤。",
+    "description": "步骤状态从 runStore 更新。",
+    "stepDetail": "步骤详情",
+    "emptyDetail": "暂无步骤详情。"
+  },
+  "steps": {
+    "compile": "编译",
+    "generate": "生成",
+    "verify": "验证",
+    "repair": "修复"
+  },
+  "stepStatus": {
+    "idle": "空闲",
+    "running": "运行中",
+    "success": "成功",
+    "fail": "失败"
+  },
+  "phase": {
+    "idle": "空闲",
+    "requested": "已请求",
+    "compiling": "编译中",
+    "generating": "生成中",
+    "verifying": "验证中",
+    "repairing": "修复中",
+    "paused": "已暂停",
+    "completed": "已完成",
+    "failed": "失败",
+    "cancelled": "已取消"
+  },
+  "connection": {
+    "disconnected": "已断开",
+    "connecting": "连接中",
+    "connected": "已连接",
+    "reconnecting": "重连中"
+  },
+  "detail": {
+    "waiting": "等待{{step}}。",
+    "repairWaiting": "仅当验证失败且还有修复轮次时才会运行修复。",
+    "running": "正在{{step}}。",
+    "completed": "{{step}}已完成。",
+    "retrying": "正在重试{{step}}。"
+  },
+  "repair": {
+    "round": "第 {{round}} 轮修复"
+  },
+  "output": {
+    "generatedFiles": "{{count}} 个生成文件",
+    "inspect": "查看、折叠或复制输出",
+    "noGeneratedOutput": "暂无可复制的生成输出。",
+    "copied": "生成输出已复制到剪贴板。",
+    "fileEmpty": "文件输出为空。"
+  },
+  "history": {
+    "title": "运行历史",
+    "description": "浏览器本地保存的真实编排响应历史。",
+    "defaultModel": "默认模型",
+    "empty": "暂无运行记录。请从运行页面执行一次运行。",
+    "generatedOutput": "生成输出",
+    "selectRun": "选择一次运行以查看详情。",
+    "notFound": "未找到运行记录。"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "editor": {
+    "title": "DSL 编辑器",
+    "compile": "编译",
+    "compiling": "编译中...",
+    "namePlaceholder": "DSL 名称",
+    "save": "保存 DSL",
+    "failed": "编译失败",
+    "yamlEditor": "YAML 编辑器",
+    "copyDsl": "复制 DSL",
+    "placeholder": "输入 YAML DSL...",
+    "highlighting": "高亮已启用",
+    "stats": "{{lines}} 行 / {{chars}} 个字符",
+    "emptyEditor": "DSL 编辑器为空。",
+    "emptySave": "DSL 为空，未保存任何内容。",
+    "emptyCompile": "DSL 为空，请先输入 YAML 再编译。",
+    "defaultName": "DSL",
+    "copied": "DSL 已复制到剪贴板。",
+    "loaded": "已加载 {{name}}。",
+    "saved": "已保存 {{name}}。",
+    "compiledSuccessfully": "DSL 编译成功。"
+  },
+  "prompt": {
+    "title": "编译后的 Prompt",
+    "compiled": "已编译",
+    "idle": "空闲",
+    "empty": "编译 DSL 后可查看返回的 Prompt。"
+  },
+  "response": {
+    "title": "编译器响应",
+    "empty": "暂无编译器响应。"
+  }
+}

@@ -45,9 +45,11 @@ export function createWorkflowGraph(steps: TimelineStep[], phase: ExecutionPhase
         y: CANVAS_Y,
       },
       data: {
-        label: step.title,
+        label: step.key,
         status: flowStatus,
         detail: step.detail ?? '',
+        detailKey: step.detailKey,
+        detailParams: step.detailParams,
       },
       width: NODE_WIDTH,
       height: NODE_HEIGHT,

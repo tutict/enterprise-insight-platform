@@ -23,11 +23,15 @@ export type RepairAttempt = {
   message?: string
 }
 
+export type TranslationParams = Record<string, string | number>
+
 export type StepState = {
   key: StepKey
   title: string
   status: StepStatus
   detail?: string
+  detailKey?: string
+  detailParams?: TranslationParams
   attempts?: RepairAttempt[]
 }
 

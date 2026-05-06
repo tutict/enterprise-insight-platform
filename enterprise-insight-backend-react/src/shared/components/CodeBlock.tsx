@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNotificationStore } from '../../store/uiStore'
 
 type CodeBlockProps = {
@@ -11,21 +12,22 @@ type CodeBlockProps = {
 
 export default function CodeBlock({
   value,
-  emptyLabel = 'No output yet.',
+  emptyLabel,
   className = '',
   collapsible = false,
   defaultCollapsed = false,
 }: CodeBlockProps) {
+  const { t } = useTranslation('common')
   const [collapsed, setCollapsed] = useState(defaultCollapsed)
   const pushNotification = useNotificationStore((state) => state.push)
-  const displayValue = value || emptyLabel
+  const displayValue = value || emptyLabel || t('code.noOutput')
 
   const copyToClipboard = async () => {
     if (!value) {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'Nothing to copy yet.',
+        message: t('clipboard.nothingToCopy'),
       })
       return
     }
@@ -35,13 +37,13 @@ export default function CodeBlock({
       pushNotification({
         id: crypto.randomUUID(),
         type: 'success',
-        message: 'Copied to clipboard.',
+        message: t('clipboard.copied'),
       })
     } catch {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'Copy failed. Check browser clipboard permission.',
+        message: t('clipboard.copyFailed'),
       })
     }
   }
@@ -49,7 +51,9 @@ export default function CodeBlock({
   return (
     <div className="overflow-hidden rounded-lg border border-white/10 bg-console-950">
       <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
-        <span className="text-xs text-slate-500">{value ? `${value.length.toLocaleString()} chars` : 'empty'}</span>
+        <span className="text-xs text-slate-500">
+          {value ? t('code.chars', { count: value.length.toLocaleString() }) : t('code.empty')}
+        </span>
         <div className="flex items-center gap-2">
           {collapsible ? (
             <button
@@ -58,11 +62,11 @@ export default function CodeBlock({
               aria-expanded={!collapsed}
               onClick={() => setCollapsed((current) => !current)}
             >
-              {collapsed ? 'Expand' : 'Collapse'}
+              {collapsed ? t('code.expand') : t('code.collapse')}
             </button>
           ) : null}
           <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={() => void copyToClipboard()}>
-            Copy
+            {t('clipboard.copy')}
           </button>
         </div>
       </div>

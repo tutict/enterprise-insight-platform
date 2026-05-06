@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { StepStatus } from '../../features/run/model/runEvent'
 
 const statusClass: Record<StepStatus, string> = {
@@ -8,9 +9,11 @@ const statusClass: Record<StepStatus, string> = {
 }
 
 export default function StatusBadge({ status }: { status: StepStatus }) {
+  const { t } = useTranslation('run')
+
   return (
     <span className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium ${statusClass[status]}`}>
-      {status}
+      {t(`stepStatus.${status}`)}
     </span>
   )
 }

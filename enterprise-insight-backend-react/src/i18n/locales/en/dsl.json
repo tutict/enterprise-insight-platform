@@ -1,0 +1,33 @@
+{
+  "editor": {
+    "title": "DSL Editor",
+    "compile": "Compile",
+    "compiling": "Compiling...",
+    "namePlaceholder": "DSL name",
+    "save": "Save DSL",
+    "failed": "Compile failed",
+    "yamlEditor": "YAML editor",
+    "copyDsl": "Copy DSL",
+    "placeholder": "Enter YAML DSL...",
+    "highlighting": "highlighting enabled",
+    "stats": "{{lines}} lines / {{chars}} chars",
+    "emptyEditor": "DSL editor is empty.",
+    "emptySave": "DSL is empty. Nothing was saved.",
+    "emptyCompile": "DSL is empty. Add YAML before compiling.",
+    "defaultName": "DSL",
+    "copied": "DSL copied to clipboard.",
+    "loaded": "Loaded {{name}}.",
+    "saved": "Saved {{name}}.",
+    "compiledSuccessfully": "DSL compiled successfully."
+  },
+  "prompt": {
+    "title": "Compiled Prompt",
+    "compiled": "compiled",
+    "idle": "idle",
+    "empty": "Compile a DSL to inspect the returned prompt."
+  },
+  "response": {
+    "title": "Compiler Response",
+    "empty": "No compiler response yet."
+  }
+}

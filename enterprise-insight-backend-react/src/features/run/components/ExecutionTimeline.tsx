@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { StepStatus, TimelineStep } from '../model/runEvent'
 import CodeBlock from '../../../shared/components/CodeBlock'
 import StatusBadge from '../../../shared/components/StatusBadge'
@@ -21,18 +22,32 @@ const getInitialStepKey = (steps: TimelineStep[]) =>
   steps.find((step) => step.status === 'running')?.key ?? steps[0]?.key ?? ''
 
 export default function ExecutionTimeline({ steps }: { steps: TimelineStep[] }) {
+  const { t } = useTranslation('run')
   const [selectedStepKey, setSelectedStepKey] = useState<string>(() => getInitialStepKey(steps))
   const selectedStep = useMemo(
     () => steps.find((step) => step.key === selectedStepKey) ?? steps.find((step) => step.status === 'running') ?? steps[0],
     [selectedStepKey, steps],
   )
+  const getStepLabel = (step: TimelineStep) => t(`steps.${step.key}`)
+  const getStepDetail = (step: TimelineStep | undefined) => {
+    if (!step) {
+      return ''
+    }
+    if (step.detailKey) {
+      return t(step.detailKey, {
+        ...step.detailParams,
+        step: getStepLabel(step).toLocaleLowerCase(),
+      })
+    }
+    return step.detail ?? ''
+  }
 
   if (!steps.length) {
     return (
       <section className="panel p-5">
-        <h2 className="text-sm font-semibold text-slate-100">Execution Timeline</h2>
+        <h2 className="text-sm font-semibold text-slate-100">{t('timeline.title')}</h2>
         <div className="mt-4 rounded-lg border border-white/10 bg-console-950 p-4 text-sm text-slate-500">
-          No execution steps yet.
+          {t('timeline.empty')}
         </div>
       </section>
     )
@@ -42,11 +57,11 @@ export default function ExecutionTimeline({ steps }: { steps: TimelineStep[] }) 
     <section className="panel p-5">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-slate-100">Execution Timeline</h2>
-          <p className="muted">Stepper status updates from runStore.</p>
+          <h2 className="text-sm font-semibold text-slate-100">{t('timeline.title')}</h2>
+          <p className="muted">{t('timeline.description')}</p>
         </div>
         <span className="rounded-md border border-white/10 px-2 py-1 text-xs text-slate-400">
-          {selectedStep?.title ?? 'idle'}
+          {selectedStep ? getStepLabel(selectedStep) : t('stepStatus.idle')}
         </span>
       </div>
 
@@ -79,7 +94,7 @@ export default function ExecutionTimeline({ steps }: { steps: TimelineStep[] }) 
                   {index + 1}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-100">{step.title}</p>
+                  <p className="truncate text-sm font-medium text-slate-100">{getStepLabel(step)}</p>
                   <div className="mt-1">
                     <StatusBadge status={step.status} />
                   </div>
@@ -93,12 +108,26 @@ export default function ExecutionTimeline({ steps }: { steps: TimelineStep[] }) 
       <div className="mt-4 rounded-lg border border-white/10 bg-console-950 p-3">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-slate-100">{selectedStep?.title ?? 'Step detail'}</p>
-            <p className="mt-1 text-xs text-slate-500">{selectedStep?.status ?? 'idle'}</p>
+            <p className="truncate text-sm font-medium text-slate-100">
+              {selectedStep ? getStepLabel(selectedStep) : t('timeline.stepDetail')}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              {selectedStep ? t(`stepStatus.${selectedStep.status}`) : t('stepStatus.idle')}
+            </p>
           </div>
           {selectedStep ? <StatusBadge status={selectedStep.status} /> : null}
         </div>
-        <CodeBlock value={selectedStep?.detail ?? ''} emptyLabel="No step detail yet." collapsible />
+        <CodeBlock value={getStepDetail(selectedStep)} emptyLabel={t('timeline.emptyDetail')} collapsible />
+        {selectedStep?.attempts?.length ? (
+          <div className="mt-3 space-y-2 border-t border-white/10 pt-3">
+            {selectedStep.attempts.map((attempt) => (
+              <div key={attempt.round} className="flex items-start justify-between gap-3 text-xs text-slate-400">
+                <span>{t('repair.round', { round: attempt.round })}</span>
+                <StatusBadge status={attempt.status} />
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>
   )

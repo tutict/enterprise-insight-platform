@@ -1,0 +1,105 @@
+{
+  "run": {
+    "title": "Run",
+    "execute": "Run",
+    "running": "Running...",
+    "statusRuntime": "runtime: {{status}}",
+    "statusStream": "stream: {{state}}",
+    "statusEvent": "event: {{eventId}}",
+    "pause": "Pause",
+    "resume": "Resume",
+    "cancel": "Cancel",
+    "retryVerify": "Retry verify",
+    "savedDsl": "Saved DSL",
+    "selectDsl": "Select DSL",
+    "noSavedDsl": "No saved DSL",
+    "model": "Model",
+    "targetDirectory": "Target directory",
+    "repairRounds": "Repair rounds",
+    "verifyCommand": "Verify command",
+    "inProgress": "Run request is in progress. Timeline status updates as runtime events are consumed.",
+    "failed": "Run failed",
+    "executionResult": "Execution Result",
+    "emptyOutput": "Run the orchestrator to see generated code output.",
+    "workflowGraph": "Workflow Graph",
+    "workflowPath": "compile -> generate -> verify -> repair",
+    "metadata": "Run Metadata",
+    "runId": "Run ID",
+    "attempts": "Attempts",
+    "projectRoot": "Project root",
+    "requested": "Run requested.",
+    "completedVerified": "Run completed and verified.",
+    "finishedWithStatus": "Run finished with status: {{status}}",
+    "controlRequested": "{{label}} requested.",
+    "retryStep": "Retry {{step}}",
+    "noActiveRunControl": "No active run to control.",
+    "noActiveRunRetry": "No active run to retry.",
+    "cancelled": "Run cancelled.",
+    "unsupportedEvent": "Unsupported event: {{type}}",
+    "streamInterrupted": "Execution stream connection interrupted.",
+    "controlFailed": "{{label}} failed."
+  },
+  "timeline": {
+    "title": "Execution Timeline",
+    "empty": "No execution steps yet.",
+    "description": "Stepper status updates from runStore.",
+    "stepDetail": "Step detail",
+    "emptyDetail": "No step detail yet."
+  },
+  "steps": {
+    "compile": "Compile",
+    "generate": "Generate",
+    "verify": "Verify",
+    "repair": "Repair"
+  },
+  "stepStatus": {
+    "idle": "Idle",
+    "running": "Running",
+    "success": "Success",
+    "fail": "Failed"
+  },
+  "phase": {
+    "idle": "Idle",
+    "requested": "Requested",
+    "compiling": "Compiling",
+    "generating": "Generating",
+    "verifying": "Verifying",
+    "repairing": "Repairing",
+    "paused": "Paused",
+    "completed": "Completed",
+    "failed": "Failed",
+    "cancelled": "Cancelled"
+  },
+  "connection": {
+    "disconnected": "Disconnected",
+    "connecting": "Connecting",
+    "connected": "Connected",
+    "reconnecting": "Reconnecting"
+  },
+  "detail": {
+    "waiting": "Waiting for {{step}}.",
+    "repairWaiting": "Repair runs only when verification fails and repair rounds are available.",
+    "running": "Running {{step}}.",
+    "completed": "{{step}} completed.",
+    "retrying": "Retrying {{step}}."
+  },
+  "repair": {
+    "round": "Repair round {{round}}"
+  },
+  "output": {
+    "generatedFiles": "{{count}} generated files",
+    "inspect": "inspect, fold, or copy output",
+    "noGeneratedOutput": "No generated output to copy.",
+    "copied": "Generated output copied to clipboard.",
+    "fileEmpty": "File output is empty."
+  },
+  "history": {
+    "title": "Runs",
+    "description": "Local browser history from real orchestrator responses.",
+    "defaultModel": "default model",
+    "empty": "No runs yet. Execute a run from the Run page.",
+    "generatedOutput": "Generated Output",
+    "selectRun": "Select a run to inspect details.",
+    "notFound": "Run record was not found."
+  }
+}

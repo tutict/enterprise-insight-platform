@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { compileDsl } from '../../../api/modules/compiler.api'
 import { useHistoryStore } from '../../history/store/historyStore'
 import { useNotificationStore } from '../../../store/uiStore'
 import { useDslStore } from '../store/dslStore'
 
 export function useDslEditorPage() {
+  const { t } = useTranslation('dsl')
   const [name, setName] = useState('')
   const dslText = useDslStore((state) => state.dslText)
   const setDslText = useDslStore((state) => state.setDslText)
@@ -23,7 +25,7 @@ export function useDslEditorPage() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'DSL is empty. Nothing was saved.',
+        message: t('editor.emptySave'),
       })
       return
     }
@@ -32,18 +34,18 @@ export function useDslEditorPage() {
     pushNotification({
       id: crypto.randomUUID(),
       type: 'success',
-      message: `Saved ${name.trim() || 'DSL'}.`,
+      message: t('editor.saved', { name: name.trim() || t('editor.defaultName') }),
     })
     setName('')
   }
 
   const compile = async () => {
     if (!dslText.trim()) {
-      compileFailed('DSL is empty.')
+      compileFailed(t('editor.emptyEditor'))
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'DSL is empty. Add YAML before compiling.',
+        message: t('editor.emptyCompile'),
       })
       return
     }
@@ -52,7 +54,7 @@ export function useDslEditorPage() {
     pushNotification({
       id: crypto.randomUUID(),
       type: 'info',
-      message: 'Compiling DSL...',
+      message: t('editor.compiling'),
     })
 
     try {
@@ -61,10 +63,10 @@ export function useDslEditorPage() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'success',
-        message: 'DSL compiled successfully.',
+        message: t('editor.compiledSuccessfully'),
       })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Compile failed'
+      const message = err instanceof Error ? err.message : t('editor.failed')
       compileFailed(message)
       pushNotification({
         id: crypto.randomUUID(),

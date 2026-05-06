@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import GraphCanvas from './GraphCanvas'
 import type { GraphConnectionState, GraphRunStatus } from '../../../api/types/graph.types'
 import GraphEditor from './builder/GraphEditor'
@@ -32,23 +33,25 @@ export default function GraphRuntimeWorkspace({
   setGeneratedPrompt,
   copyGeneratedPrompt,
 }: GraphRuntimeWorkspaceProps) {
+  const { t } = useTranslation(['common', 'run'])
+
   return (
     <div className="space-y-5">
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Graph Builder</h2>
-            <p className="muted">Build nodes and edges; execution stays in the backend graph runtime.</p>
+            <h2 className="text-lg font-semibold text-slate-100">{t('graph.builder.title')}</h2>
+            <p className="muted">{t('graph.builder.description')}</p>
           </div>
           <div className="flex items-center gap-2">
             <button className="btn-secondary" type="button" onClick={compileGraph}>
-              Compile
+              {t('graph.builder.compile')}
             </button>
             <button className="btn-secondary" type="button" onClick={generatePrompt} disabled={isGeneratingPrompt}>
-              {isGeneratingPrompt ? 'Generating...' : 'Generate Prompt'}
+              {isGeneratingPrompt ? t('graph.builder.generatingPrompt') : t('graph.builder.generatePrompt')}
             </button>
             <button className="btn-primary" type="button" onClick={runGraph} disabled={status === 'running'}>
-              {status === 'running' ? 'Running...' : 'Run graph'}
+              {status === 'running' ? t('run:run.running') : t('graph.builder.runGraph')}
             </button>
           </div>
         </div>
@@ -64,31 +67,41 @@ export default function GraphRuntimeWorkspace({
       <section className="panel p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Execution Runtime</h2>
-            <p className="muted">DAG, conditional edge, and repair loop runtime.</p>
+            <h2 className="text-lg font-semibold text-slate-100">{t('graph.runtime.title')}</h2>
+            <p className="muted">{t('graph.runtime.description')}</p>
           </div>
         </div>
 
         <div className="mb-4 grid gap-3 text-xs text-slate-400 md:grid-cols-4">
-          <span className="rounded-md border border-white/10 bg-console-950 px-3 py-2">status: {status}</span>
-          <span className="rounded-md border border-white/10 bg-console-950 px-3 py-2">stream: {connectionState}</span>
-          <span className="rounded-md border border-white/10 bg-console-950 px-3 py-2">event: {lastEventId ?? '-'}</span>
-          <span className="rounded-md border border-white/10 bg-console-950 px-3 py-2">events: {eventCount}</span>
+          <span className="rounded-md border border-white/10 bg-console-950 px-3 py-2">
+            {t('graph.runtime.status', { status: t([`status.${status}`, 'status.unknown'], { status }) })}
+          </span>
+          <span className="rounded-md border border-white/10 bg-console-950 px-3 py-2">
+            {t('graph.runtime.stream', {
+              state: t([`status.${connectionState}`, 'status.unknown'], { status: connectionState }),
+            })}
+          </span>
+          <span className="rounded-md border border-white/10 bg-console-950 px-3 py-2">
+            {t('graph.runtime.event', { eventId: lastEventId ?? '-' })}
+          </span>
+          <span className="rounded-md border border-white/10 bg-console-950 px-3 py-2">
+            {t('graph.runtime.events', { count: eventCount })}
+          </span>
         </div>
 
         <GraphCanvas />
       </section>
 
       <section className="panel p-5">
-        <h3 className="mb-3 text-sm font-semibold text-slate-100">Graph Metadata</h3>
+        <h3 className="mb-3 text-sm font-semibold text-slate-100">{t('graph.metadata.title')}</h3>
         <div className="grid gap-3 text-sm text-slate-300 md:grid-cols-2">
           <div className="rounded-md border border-white/10 bg-console-950 px-3 py-2">
-            <span className="text-slate-500">Run ID</span>
+            <span className="text-slate-500">{t('run:run.runId')}</span>
             <p className="mt-1 truncate">{runId ?? '-'}</p>
           </div>
           <div className="rounded-md border border-white/10 bg-console-950 px-3 py-2">
-            <span className="text-slate-500">Default graph</span>
-            <p className="mt-1">compile -&gt; generate -&gt; verify -&gt; repair loop</p>
+            <span className="text-slate-500">{t('graph.metadata.defaultGraph')}</span>
+            <p className="mt-1">{t('graph.metadata.defaultGraphPath')}</p>
           </div>
         </div>
       </section>

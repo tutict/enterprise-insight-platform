@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNotificationStore } from '../../../store/uiStore'
 import { useDslStore } from '../../dsl/store/dslStore'
 import { useHistoryStore } from '../../history/store/historyStore'
@@ -8,6 +9,7 @@ import { DEFAULT_VERIFY_COMMAND } from '../model/runConfig'
 import { useRunRuntime } from './useRunRuntime'
 
 export function useRunPage() {
+  const { t } = useTranslation(['run', 'dsl'])
   const [model, setModel] = useState('llama3.1')
   const [targetDirectory, setTargetDirectory] = useState('generated-harness-app')
   const [verifyCommand, setVerifyCommand] = useState(DEFAULT_VERIFY_COMMAND)
@@ -41,7 +43,7 @@ export function useRunPage() {
     pushNotification({
       id: crypto.randomUUID(),
       type: 'info',
-      message: 'Run requested.',
+      message: t('run.requested'),
     })
 
     try {
@@ -58,7 +60,7 @@ export function useRunPage() {
         pushNotification({
           id: crypto.randomUUID(),
           type: 'error',
-          message: currentExecution.error ?? 'Run failed.',
+          message: currentExecution.error ?? t('run.failed'),
         })
         return
       }
@@ -79,11 +81,11 @@ export function useRunPage() {
         id: crypto.randomUUID(),
         type: response.generation.successful ? 'success' : 'error',
         message: response.generation.successful
-          ? 'Run completed and verified.'
-          : `Run finished with status: ${response.generation.status}`,
+          ? t('run.completedVerified')
+          : t('run.finishedWithStatus', { status: response.generation.status }),
       })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Run failed'
+      const message = err instanceof Error ? err.message : t('run.failed')
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
@@ -99,7 +101,7 @@ export function useRunPage() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'info',
-        message: `Loaded ${selected.name}.`,
+        message: t('dsl:editor.loaded', { name: selected.name }),
       })
     }
   }
@@ -110,19 +112,19 @@ export function useRunPage() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'info',
-        message: `${label} requested.`,
+        message: t('run.controlRequested', { label }),
       })
     } catch (err) {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: err instanceof Error ? err.message : `${label} failed.`,
+        message: err instanceof Error ? err.message : t('run.controlFailed', { label }),
       })
     }
   }
 
   const retryStep = (step: StepKey) => {
-    void sendControl(`Retry ${step}`, () => runtime.retryStep(step))
+    void sendControl(t('run.retryStep', { step: t(`steps.${step}`) }), () => runtime.retryStep(step))
   }
 
   return {
@@ -144,9 +146,9 @@ export function useRunPage() {
     selectDsl,
     run: () => void run(),
     controls: {
-      pause: () => void sendControl('Pause', runtime.pause),
-      resume: () => void sendControl('Resume', runtime.resume),
-      cancel: () => void sendControl('Cancel', runtime.cancel),
+      pause: () => void sendControl(t('run.pause'), runtime.pause),
+      resume: () => void sendControl(t('run.resume'), runtime.resume),
+      cancel: () => void sendControl(t('run.cancel'), runtime.cancel),
       retryStep,
     },
     runState: {

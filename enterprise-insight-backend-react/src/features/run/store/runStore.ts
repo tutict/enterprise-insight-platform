@@ -27,7 +27,8 @@ const createStep = (key: StepKey, title = key): StepState => ({
   key,
   title,
   status: 'idle',
-  detail: `Waiting for ${title}.`,
+  detailKey: 'detail.waiting',
+  detailParams: { step: title },
   attempts: key === 'repair' ? [] : undefined,
 })
 
@@ -37,7 +38,8 @@ export const createInitialSteps = (): StepState[] => [
   createStep('verify'),
   {
     ...createStep('repair'),
-    detail: 'Repair runs only when verification fails and repair rounds are available.',
+    detailKey: 'detail.repairWaiting',
+    detailParams: undefined,
   },
 ]
 
@@ -196,7 +198,7 @@ export const runReducer = (execution: Execution, event: RunEvent): Execution => 
         event,
       )
     case 'STEP_STARTED': {
-      const detail = event.detail ?? `Running ${event.step}.`
+      const hasBackendDetail = Boolean(event.detail)
       return appendEvent(
         {
           ...execution,
@@ -205,15 +207,18 @@ export const runReducer = (execution: Execution, event: RunEvent): Execution => 
           steps: updateStep(execution.steps, event.step, (step) => ({
             ...step,
             status: 'running',
-            detail,
-            attempts: event.step === 'repair' ? startRepairAttempt(step.attempts, detail) : step.attempts,
+            detail: event.detail,
+            detailKey: hasBackendDetail ? undefined : 'detail.running',
+            detailParams: hasBackendDetail ? undefined : { step: event.step },
+            attempts: event.step === 'repair' ? startRepairAttempt(step.attempts, event.detail) : step.attempts,
           })),
         },
         event,
       )
     }
     case 'STEP_SUCCEEDED': {
-      const detail = event.detail ?? getPayloadDetail(event.payload) ?? `${event.step} completed.`
+      const detail = event.detail ?? getPayloadDetail(event.payload)
+      const hasBackendDetail = Boolean(detail)
       return appendEvent(
         {
           ...execution,
@@ -221,6 +226,8 @@ export const runReducer = (execution: Execution, event: RunEvent): Execution => 
             ...step,
             status: 'success',
             detail,
+            detailKey: hasBackendDetail ? undefined : 'detail.completed',
+            detailParams: hasBackendDetail ? undefined : { step: event.step },
             attempts:
               event.step === 'repair'
                 ? finishLatestRepairAttempt(step.attempts, 'success', detail)
@@ -239,6 +246,8 @@ export const runReducer = (execution: Execution, event: RunEvent): Execution => 
             ...step,
             status: 'fail',
             detail,
+            detailKey: undefined,
+            detailParams: undefined,
             attempts:
               event.step === 'repair'
                 ? finishLatestRepairAttempt(step.attempts, 'fail', detail)
@@ -256,7 +265,9 @@ export const runReducer = (execution: Execution, event: RunEvent): Execution => 
           error: undefined,
           steps: updateStep(execution.steps, event.step, {
             status: 'running',
-            detail: event.reason ?? `Retrying ${event.step}.`,
+            detail: event.reason,
+            detailKey: event.reason ? undefined : 'detail.retrying',
+            detailParams: event.reason ? undefined : { step: event.step },
           }),
         },
         event,

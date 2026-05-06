@@ -1,11 +1,15 @@
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
+import { useTranslation } from 'react-i18next'
+import type { StepKey, TranslationParams } from '../../model/runEvent'
 
 export type FlowNodeStatus = 'idle' | 'running' | 'success' | 'fail'
 
 export type FlowNodeData = {
-  label: string
+  label: StepKey
   status: FlowNodeStatus
   detail: string
+  detailKey?: string
+  detailParams?: TranslationParams
 }
 
 export type WorkflowNode = Node<FlowNodeData, 'workflow'>
@@ -25,6 +29,15 @@ const indicatorClass: Record<FlowNodeStatus, string> = {
 }
 
 export default function FlowNodeComponent({ data }: NodeProps<WorkflowNode>) {
+  const { t } = useTranslation('run')
+  const stepLabel = t(`steps.${data.label}`)
+  const detail = data.detailKey
+    ? t(data.detailKey, {
+        ...data.detailParams,
+        step: stepLabel.toLocaleLowerCase(),
+      })
+    : data.detail
+
   return (
     <div className={`min-w-44 rounded-lg border px-4 py-3 ${nodeStateClass[data.status]}`}>
       <Handle
@@ -35,8 +48,8 @@ export default function FlowNodeComponent({ data }: NodeProps<WorkflowNode>) {
       />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-100">{data.label}</p>
-          <p className="mt-1 text-xs uppercase tracking-wide text-current">{data.status}</p>
+          <p className="truncate text-sm font-semibold text-slate-100">{stepLabel}</p>
+          <p className="mt-1 text-xs uppercase tracking-wide text-current">{t(`stepStatus.${data.status}`)}</p>
         </div>
         <span className="relative mt-1 flex h-3 w-3 shrink-0">
           {data.status === 'running' ? (
@@ -45,7 +58,7 @@ export default function FlowNodeComponent({ data }: NodeProps<WorkflowNode>) {
           <span className={`relative inline-flex h-3 w-3 rounded-full ${indicatorClass[data.status]}`} />
         </span>
       </div>
-      <p className="mt-3 line-clamp-2 text-xs leading-5 text-slate-400">{data.detail}</p>
+      <p className="mt-3 line-clamp-2 text-xs leading-5 text-slate-400">{detail}</p>
       <Handle
         type="source"
         position={Position.Right}

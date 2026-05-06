@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import StatusBadge from '../../../shared/components/StatusBadge'
 import type { RunRecord } from '../../run/model/runEvent'
 
@@ -8,11 +9,13 @@ type RunListProps = {
 }
 
 export default function RunList({ runs, selectedRunId, onSelectRun }: RunListProps) {
+  const { t } = useTranslation('run')
+
   return (
     <section className="panel overflow-hidden">
       <div className="border-b border-white/10 p-5">
-        <h2 className="text-lg font-semibold text-slate-100">Runs</h2>
-        <p className="muted">Local browser history from real orchestrator responses.</p>
+        <h2 className="text-lg font-semibold text-slate-100">{t('history.title')}</h2>
+        <p className="muted">{t('history.description')}</p>
       </div>
       <div className="divide-y divide-white/10">
         {runs.length ? (
@@ -31,13 +34,13 @@ export default function RunList({ runs, selectedRunId, onSelectRun }: RunListPro
               </div>
               <div className="grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
                 <span className="truncate">{run.targetDirectory}</span>
-                <span>{run.model || 'default model'}</span>
+                <span>{run.model || t('history.defaultModel')}</span>
                 <span>{new Date(run.createdAt).toLocaleString()}</span>
               </div>
             </button>
           ))
         ) : (
-          <div className="p-8 text-sm text-slate-500">No runs yet. Execute a run from the Run page.</div>
+          <div className="p-8 text-sm text-slate-500">{t('history.empty')}</div>
         )}
       </div>
     </section>

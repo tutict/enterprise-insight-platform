@@ -1,4 +1,5 @@
 import type { Edge } from '@xyflow/react'
+import { useTranslation } from 'react-i18next'
 import type { OrchestratorRunResponse } from '../../../api/types/orchestrator.types'
 import YamlEditor from '../../dsl/components/YamlEditor'
 import type { SavedDsl } from '../../history/store/historyTypes'
@@ -61,10 +62,15 @@ export default function RunWorkspace({
   workflow,
   runState,
 }: RunWorkspaceProps) {
+  const { t } = useTranslation(['run', 'common'])
   const canPause = runState.status === 'running'
   const canResume = runState.status === 'paused'
   const canCancel = runState.status === 'running' || runState.status === 'paused'
   const canRetryVerify = runState.steps.some((step) => step.key === 'verify' && step.status === 'fail')
+  const formatStatus = (status: string) => t([`common:status.${status}`, 'common:status.unknown'], { status })
+  const resultStatus = runState.result?.generation.status
+    ? formatStatus(runState.result.generation.status)
+    : t(`phase.${runState.phase}`)
 
   return (
     <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_430px]">
@@ -72,7 +78,7 @@ export default function RunWorkspace({
         <div className="panel p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-slate-100">Run</h2>
+              <h2 className="text-lg font-semibold text-slate-100">{t('run.title')}</h2>
               <p className="muted">POST /api/orchestrator/run</p>
             </div>
             <button
@@ -81,27 +87,31 @@ export default function RunWorkspace({
               onClick={run}
               disabled={runState.isRunning}
             >
-              {runState.isRunning ? 'Running...' : 'Run'}
+              {runState.isRunning ? t('run.running') : t('run.execute')}
             </button>
           </div>
 
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-console-950 px-3 py-2">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-              <span className="rounded-md border border-white/10 px-2 py-1">runtime: {runState.status}</span>
-              <span className="rounded-md border border-white/10 px-2 py-1">stream: {runState.connectionState}</span>
               <span className="rounded-md border border-white/10 px-2 py-1">
-                event: {runState.lastEventId ?? '-'}
+                {t('run.statusRuntime', { status: formatStatus(runState.status) })}
+              </span>
+              <span className="rounded-md border border-white/10 px-2 py-1">
+                {t('run.statusStream', { state: t(`connection.${runState.connectionState}`) })}
+              </span>
+              <span className="rounded-md border border-white/10 px-2 py-1">
+                {t('run.statusEvent', { eventId: runState.lastEventId ?? '-' })}
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={controls.pause} disabled={!canPause}>
-                Pause
+                {t('run.pause')}
               </button>
               <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={controls.resume} disabled={!canResume}>
-                Resume
+                {t('run.resume')}
               </button>
               <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={controls.cancel} disabled={!canCancel}>
-                Cancel
+                {t('run.cancel')}
               </button>
               <button
                 className="btn-secondary px-2 py-1 text-xs"
@@ -109,17 +119,17 @@ export default function RunWorkspace({
                 onClick={() => controls.retryStep('verify')}
                 disabled={!canRetryVerify}
               >
-                Retry verify
+                {t('run.retryVerify')}
               </button>
             </div>
           </div>
 
           <div className="mb-4 grid gap-3 md:grid-cols-4">
             <label className="space-y-2">
-              <span className="text-xs font-medium text-slate-400">Saved DSL</span>
+              <span className="text-xs font-medium text-slate-400">{t('run.savedDsl')}</span>
               <select className="field w-full" onChange={(event) => selectDsl(event.target.value)} defaultValue="">
                 <option value="" disabled>
-                  {savedDsls.length ? 'Select DSL' : 'No saved DSL'}
+                  {savedDsls.length ? t('run.selectDsl') : t('run.noSavedDsl')}
                 </option>
                 {savedDsls.map((dsl) => (
                   <option key={dsl.id} value={dsl.id}>
@@ -129,11 +139,11 @@ export default function RunWorkspace({
               </select>
             </label>
             <label className="space-y-2">
-              <span className="text-xs font-medium text-slate-400">Model</span>
+              <span className="text-xs font-medium text-slate-400">{t('run.model')}</span>
               <input className="field w-full" value={form.model} onChange={(event) => setForm.setModel(event.target.value)} />
             </label>
             <label className="space-y-2">
-              <span className="text-xs font-medium text-slate-400">Target directory</span>
+              <span className="text-xs font-medium text-slate-400">{t('run.targetDirectory')}</span>
               <input
                 className="field w-full"
                 value={form.targetDirectory}
@@ -141,7 +151,7 @@ export default function RunWorkspace({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-xs font-medium text-slate-400">Repair rounds</span>
+              <span className="text-xs font-medium text-slate-400">{t('run.repairRounds')}</span>
               <input
                 className="field w-full"
                 type="number"
@@ -154,7 +164,7 @@ export default function RunWorkspace({
           </div>
 
           <label className="mb-4 block space-y-2">
-            <span className="text-xs font-medium text-slate-400">Verify command</span>
+            <span className="text-xs font-medium text-slate-400">{t('run.verifyCommand')}</span>
             <input
               className="field w-full"
               value={form.verifyCommand}
@@ -166,13 +176,13 @@ export default function RunWorkspace({
 
           {runState.isRunning ? (
             <div className="mt-4 rounded-lg border border-cyan-400/30 bg-cyan-950/60 p-3 text-sm text-cyan-100">
-              Run request is in progress. Timeline status updates as runtime events are consumed.
+              {t('run.inProgress')}
             </div>
           ) : null}
 
           {runState.error ? (
             <div className="mt-4 rounded-lg border border-red-400/30 bg-red-950/60 p-3 text-sm text-red-100">
-              <p className="font-medium">Run failed</p>
+              <p className="font-medium">{t('run.failed')}</p>
               <p className="mt-1 text-red-100/80">{runState.error}</p>
             </div>
           ) : null}
@@ -180,14 +190,14 @@ export default function RunWorkspace({
 
         <div className="panel p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-100">Execution Result</h3>
+            <h3 className="text-sm font-semibold text-slate-100">{t('run.executionResult')}</h3>
             <span className="rounded-md border border-white/10 px-2 py-1 text-xs text-slate-400">
-              {runState.result?.generation.status ?? runState.phase}
+              {resultStatus}
             </span>
           </div>
           <CodeOutput
             value={runState.result?.generation.finalOutput ?? ''}
-            emptyLabel="Run the orchestrator to see generated code output."
+            emptyLabel={t('run.emptyOutput')}
           />
         </div>
       </section>
@@ -195,25 +205,25 @@ export default function RunWorkspace({
       <aside className="space-y-5">
         <section className="panel p-5">
           <div className="mb-4">
-            <h2 className="text-sm font-semibold text-slate-100">Workflow Graph</h2>
-            <p className="muted">compile {'->'} generate {'->'} verify {'->'} repair</p>
+            <h2 className="text-sm font-semibold text-slate-100">{t('run.workflowGraph')}</h2>
+            <p className="muted">{t('run.workflowPath')}</p>
           </div>
           <FlowCanvas nodes={workflow.nodes} edges={workflow.edges} />
         </section>
         <ExecutionTimeline steps={runState.steps} />
         <section className="panel p-5">
-          <h3 className="mb-3 text-sm font-semibold text-slate-100">Run Metadata</h3>
+          <h3 className="mb-3 text-sm font-semibold text-slate-100">{t('run.metadata')}</h3>
           <div className="space-y-3 text-sm text-slate-300">
             <div className="flex justify-between gap-4">
-              <span className="text-slate-500">Run ID</span>
+              <span className="text-slate-500">{t('run.runId')}</span>
               <span className="truncate">{runState.result?.runId ?? runState.runId ?? '-'}</span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-slate-500">Attempts</span>
+              <span className="text-slate-500">{t('run.attempts')}</span>
               <span>{runState.result?.generation.totalAttempts ?? '-'}</span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-slate-500">Project root</span>
+              <span className="text-slate-500">{t('run.projectRoot')}</span>
               <span className="truncate">{runState.result?.generation.projectRoot ?? '-'}</span>
             </div>
           </div>

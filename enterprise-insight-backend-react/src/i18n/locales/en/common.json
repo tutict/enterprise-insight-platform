@@ -1,0 +1,144 @@
+{
+  "app": {
+    "brand": "AI Orchestrator",
+    "console": "Control Console",
+    "heading": "Orchestrator Console",
+    "eyebrow": "Engineering AI"
+  },
+  "api": {
+    "label": "API",
+    "online": "online",
+    "latency": "{{latency}}ms",
+    "state": {
+      "checking": "checking",
+      "down": "down",
+      "error": "error"
+    }
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "signOut": "Sign out",
+    "username": "Username",
+    "password": "Password",
+    "description": "Access the compiler, orchestrator, and run history.",
+    "failed": "Sign in failed",
+    "signedIn": "Signed in successfully.",
+    "demoHint": "Demo backend accepts any password. Use admin for admin role."
+  },
+  "nav": {
+    "dsl": "DSL Editor",
+    "graph": "Graph",
+    "run": "Run",
+    "runs": "Runs",
+    "settings": "Settings",
+    "pipeline": "Pipeline",
+    "steps": {
+      "compile": "compile",
+      "generate": "generate",
+      "verify": "verify"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Runtime values used by the console client.",
+    "executionContract": "Execution Contract",
+    "language": "Language",
+    "languageOption": {
+      "en": "English",
+      "zh-CN": "Simplified Chinese"
+    },
+    "runtimeLabels": {
+      "apiBaseUrl": "API base URL",
+      "compilerEndpoint": "Compiler endpoint",
+      "orchestratorEndpoint": "Orchestrator endpoint"
+    },
+    "values": {
+      "sameOriginProxy": "same-origin / Vite proxy"
+    },
+    "contract": {
+      "compiler": "DSL Editor sends YAML text through the compiler request body.",
+      "orchestrator": "Run sends the same DSL text to the orchestrator as the requirement field.",
+      "timeline": "Timeline status is derived from actual orchestrator lifecycle and response fields."
+    }
+  },
+  "graph": {
+    "builder": {
+      "title": "Graph Builder",
+      "description": "Build nodes and edges; execution stays in the backend graph runtime.",
+      "compile": "Compile",
+      "generatePrompt": "Generate Prompt",
+      "generatingPrompt": "Generating...",
+      "runGraph": "Run graph"
+    },
+    "prompt": {
+      "title": "Generated Prompt",
+      "description": "Graph -> DSL -> template prompt output.",
+      "placeholder": "Click Generate Prompt to compile the current graph."
+    },
+    "runtime": {
+      "title": "Execution Runtime",
+      "description": "DAG, conditional edge, and repair loop runtime.",
+      "status": "status: {{status}}",
+      "stream": "stream: {{state}}",
+      "event": "event: {{eventId}}",
+      "events": "events: {{count}}"
+    },
+    "metadata": {
+      "title": "Graph Metadata",
+      "defaultGraph": "Default graph",
+      "defaultGraphPath": "compile -> generate -> verify -> repair loop"
+    },
+    "notifications": {
+      "compiled": "Graph compiled.",
+      "validationFailed": "Graph validation failed.",
+      "compileFailed": "Graph compile failed.",
+      "invalid": "Graph is invalid.",
+      "promptGenerated": "Prompt generated from graph.",
+      "promptFailed": "Prompt generation failed.",
+      "noPromptToCopy": "No generated prompt to copy.",
+      "promptCopied": "Prompt copied.",
+      "runRequested": "Graph run requested.",
+      "runFailed": "Graph run failed."
+    }
+  },
+  "status": {
+    "idle": "Idle",
+    "running": "Running",
+    "success": "Success",
+    "fail": "Failed",
+    "failed": "Failed",
+    "completed": "Completed",
+    "paused": "Paused",
+    "requested": "Requested",
+    "compiling": "Compiling",
+    "generating": "Generating",
+    "verifying": "Verifying",
+    "repairing": "Repairing",
+    "cancelled": "Cancelled",
+    "connecting": "Connecting",
+    "connected": "Connected",
+    "reconnecting": "Reconnecting",
+    "disconnected": "Disconnected",
+    "unknown": "{{status}}"
+  },
+  "clipboard": {
+    "copy": "Copy",
+    "copyAll": "Copy all",
+    "copied": "Copied to clipboard.",
+    "copyFailed": "Copy failed. Check browser clipboard permission.",
+    "nothingToCopy": "Nothing to copy yet."
+  },
+  "code": {
+    "empty": "empty",
+    "chars": "{{count}} chars",
+    "noOutput": "No output yet.",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all"
+  },
+  "user": {
+    "tenantSeparator": "tenant"
+  }
+}

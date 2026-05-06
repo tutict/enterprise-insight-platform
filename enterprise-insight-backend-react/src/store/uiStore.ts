@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import i18n, { getStoredLanguage, LANGUAGE_STORAGE_KEY, type SupportedLanguage } from '../i18n'
 
 export type NotificationType = 'error' | 'info' | 'success'
 
@@ -14,8 +15,19 @@ type NotificationState = {
   remove: (id: string) => void
 }
 
-export const useNotificationStore = create<NotificationState>((set) => ({
+export type UIState = NotificationState & {
+  language: SupportedLanguage
+  setLanguage: (lang: SupportedLanguage) => void
+}
+
+export const useNotificationStore = create<UIState>((set) => ({
+  language: getStoredLanguage(),
   notifications: [],
+  setLanguage: (language) => {
+    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+    void i18n.changeLanguage(language)
+    set({ language })
+  },
   push: (notification) =>
     set((state) => ({
       notifications: [...state.notifications, notification],

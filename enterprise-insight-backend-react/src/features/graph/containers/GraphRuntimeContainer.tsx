@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { compilePromptFromGraph } from '../../../api/modules/compiler.api'
 import { useNotificationStore } from '../../../store/uiStore'
 import { useGraphRuntime } from '../hooks/useGraphRuntime'
@@ -7,6 +8,7 @@ import { useGraphStore } from '../store/graphStore'
 import GraphRuntimeWorkspace from '../components/GraphRuntimeWorkspace'
 
 export default function GraphRuntimeContainer() {
+  const { t } = useTranslation('common')
   const [generatedPrompt, setGeneratedPrompt] = useState('')
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false)
   const runtime = useGraphRuntime()
@@ -25,13 +27,13 @@ export default function GraphRuntimeContainer() {
       pushNotification({
         id: crypto.randomUUID(),
         type: result.valid ? 'success' : 'error',
-        message: result.valid ? 'Graph compiled.' : result.errors[0] ?? 'Graph validation failed.',
+        message: result.valid ? t('graph.notifications.compiled') : result.errors[0] ?? t('graph.notifications.validationFailed'),
       })
     } catch (err) {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: err instanceof Error ? err.message : 'Graph compile failed.',
+        message: err instanceof Error ? err.message : t('graph.notifications.compileFailed'),
       })
     }
   }
@@ -41,7 +43,7 @@ export default function GraphRuntimeContainer() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: validation.errors[0] ?? 'Graph is invalid.',
+        message: validation.errors[0] ?? t('graph.notifications.invalid'),
       })
       return
     }
@@ -53,13 +55,13 @@ export default function GraphRuntimeContainer() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'success',
-        message: 'Prompt generated from graph.',
+        message: t('graph.notifications.promptGenerated'),
       })
     } catch (err) {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: err instanceof Error ? err.message : 'Prompt generation failed.',
+        message: err instanceof Error ? err.message : t('graph.notifications.promptFailed'),
       })
     } finally {
       setIsGeneratingPrompt(false)
@@ -71,7 +73,7 @@ export default function GraphRuntimeContainer() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'No generated prompt to copy.',
+        message: t('graph.notifications.noPromptToCopy'),
       })
       return
     }
@@ -81,13 +83,13 @@ export default function GraphRuntimeContainer() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'success',
-        message: 'Prompt copied.',
+        message: t('graph.notifications.promptCopied'),
       })
     } catch {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'Copy failed. Check browser clipboard permission.',
+        message: t('clipboard.copyFailed'),
       })
     }
   }
@@ -97,7 +99,7 @@ export default function GraphRuntimeContainer() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: validation.errors[0] ?? 'Graph is invalid.',
+        message: validation.errors[0] ?? t('graph.notifications.invalid'),
       })
       return
     }
@@ -105,7 +107,7 @@ export default function GraphRuntimeContainer() {
     pushNotification({
       id: crypto.randomUUID(),
       type: 'info',
-      message: 'Graph run requested.',
+      message: t('graph.notifications.runRequested'),
     })
     try {
       await runtime.run({
@@ -115,7 +117,7 @@ export default function GraphRuntimeContainer() {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: err instanceof Error ? err.message : 'Graph run failed.',
+        message: err instanceof Error ? err.message : t('graph.notifications.runFailed'),
       })
     }
   }

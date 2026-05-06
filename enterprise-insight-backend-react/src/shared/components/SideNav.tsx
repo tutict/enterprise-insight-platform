@@ -1,14 +1,17 @@
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 const navItems = [
-  { label: 'DSL Editor', path: '/dsl' },
-  { label: 'Graph', path: '/graph' },
-  { label: 'Run', path: '/run' },
-  { label: 'Runs', path: '/runs' },
-  { label: 'Settings', path: '/settings' },
+  { labelKey: 'nav.dsl', path: '/dsl' },
+  { labelKey: 'nav.graph', path: '/graph' },
+  { labelKey: 'nav.run', path: '/run' },
+  { labelKey: 'nav.runs', path: '/runs' },
+  { labelKey: 'nav.settings', path: '/settings' },
 ]
 
 function SideNav() {
+  const { t } = useTranslation('common')
+
   return (
     <aside className="hidden w-72 shrink-0 border-r border-white/10 bg-console-900/90 px-4 py-5 lg:block">
       <div className="mb-8 flex items-center gap-3">
@@ -16,8 +19,8 @@ function SideNav() {
           AO
         </div>
         <div>
-          <p className="text-sm font-semibold text-slate-100">AI Orchestrator</p>
-          <p className="text-xs text-slate-500">Control Console</p>
+          <p className="text-sm font-semibold text-slate-100">{t('app.brand')}</p>
+          <p className="text-xs text-slate-500">{t('app.console')}</p>
         </div>
       </div>
 
@@ -36,17 +39,17 @@ function SideNav() {
             }
           >
             <span className="h-1.5 w-1.5 rounded-full bg-current" />
-            {item.label}
+            {t(item.labelKey)}
           </NavLink>
         ))}
       </nav>
 
       <div className="mt-8 rounded-lg border border-white/10 bg-white/[0.03] p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Pipeline</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t('nav.pipeline')}</p>
         <div className="mt-3 space-y-2 text-sm text-slate-300">
-          <p>compile</p>
-          <p>generate</p>
-          <p>verify</p>
+          <p>{t('nav.steps.compile')}</p>
+          <p>{t('nav.steps.generate')}</p>
+          <p>{t('nav.steps.verify')}</p>
         </div>
       </div>
     </aside>

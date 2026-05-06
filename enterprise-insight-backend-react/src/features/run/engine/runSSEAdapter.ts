@@ -1,5 +1,6 @@
 import { getRunStreamUrl } from '../../../api/modules/runtimeEvents.api'
 import type { OrchestratorRunResponse } from '../../../api/types/orchestrator.types'
+import i18n from '../../../i18n'
 import type { RunConfig } from '../model/runConfig'
 import type { RunEvent, StepKey } from '../model/runEvent'
 
@@ -30,8 +31,11 @@ const getPayloadString = (payload: Record<string, unknown> | undefined, key: str
   return typeof value === 'string' ? value : undefined
 }
 
+const getStepLabel = (step: StepKey) => i18n.t(`run:steps.${step}`)
+
 const normalizeRunEvent = (event: BackendRunEvent, eventId?: string): RunEvent => {
   const payload = event.payload ?? {}
+  const step = event.step ?? 'compile'
   const base = {
     runId: event.runId,
     timestamp: event.timestamp,
@@ -49,14 +53,14 @@ const normalizeRunEvent = (event: BackendRunEvent, eventId?: string): RunEvent =
       return {
         ...base,
         type: 'STEP_STARTED',
-        step: event.step ?? 'compile',
+        step,
         detail: getPayloadString(payload, 'summary'),
       }
     case 'STEP_SUCCEEDED':
       return {
         ...base,
         type: 'STEP_SUCCEEDED',
-        step: event.step ?? 'compile',
+        step,
         payload,
         detail: getPayloadString(payload, 'summary') ?? getPayloadString(payload, 'output'),
       }
@@ -64,9 +68,12 @@ const normalizeRunEvent = (event: BackendRunEvent, eventId?: string): RunEvent =
       return {
         ...base,
         type: 'STEP_FAILED',
-        step: event.step ?? 'compile',
+        step,
         payload,
-        error: getPayloadString(payload, 'error') ?? getPayloadString(payload, 'summary') ?? `${event.step} failed.`,
+        error:
+          getPayloadString(payload, 'error') ??
+          getPayloadString(payload, 'summary') ??
+          i18n.t('run:run.controlFailed', { label: getStepLabel(step) }),
       }
     case 'RUN_COMPLETED':
       return {
@@ -79,7 +86,7 @@ const normalizeRunEvent = (event: BackendRunEvent, eventId?: string): RunEvent =
       return {
         ...base,
         type: 'RUN_FAILED',
-        error: getPayloadString(payload, 'error') ?? 'Run failed.',
+        error: getPayloadString(payload, 'error') ?? i18n.t('run:run.failed'),
         result: payload.result as OrchestratorRunResponse | undefined,
         payload,
       }
@@ -98,7 +105,7 @@ const normalizeRunEvent = (event: BackendRunEvent, eventId?: string): RunEvent =
       return {
         ...base,
         type: 'RUN_CANCELLED',
-        error: getPayloadString(payload, 'error') ?? 'Run cancelled.',
+        error: getPayloadString(payload, 'error') ?? i18n.t('run:run.cancelled'),
       }
     case 'STEP_RETRY_REQUESTED':
       return {
@@ -111,7 +118,7 @@ const normalizeRunEvent = (event: BackendRunEvent, eventId?: string): RunEvent =
       return {
         ...base,
         type: 'STREAM_RECONNECTING',
-        error: `Unsupported event: ${event.type}`,
+        error: i18n.t('run:run.unsupportedEvent', { type: event.type }),
       }
   }
 }
@@ -177,7 +184,7 @@ export async function* createRunStream(
       type: source.readyState === EventSource.CLOSED ? 'STREAM_DISCONNECTED' : 'STREAM_RECONNECTING',
       runId,
       lastEventId,
-      error: 'Execution stream connection interrupted.',
+      error: i18n.t('run:run.streamInterrupted'),
     })
   }
 

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNotificationStore } from '../../../store/uiStore'
 import CodeBlock from '../../../shared/components/CodeBlock'
 
@@ -34,13 +35,14 @@ const parseGeneratedFiles = (value: string): GeneratedFile[] => {
   return files
 }
 
-export default function CodeOutput({ value, emptyLabel = 'No output yet.' }: CodeOutputProps) {
+export default function CodeOutput({ value, emptyLabel }: CodeOutputProps) {
+  const { t } = useTranslation(['run', 'common'])
   const files = useMemo(() => parseGeneratedFiles(value), [value])
   const [openFiles, setOpenFiles] = useState<Record<string, boolean>>({})
   const pushNotification = useNotificationStore((state) => state.push)
 
   if (!files.length) {
-    return <CodeBlock value={value} emptyLabel={emptyLabel} collapsible />
+    return <CodeBlock value={value} emptyLabel={emptyLabel ?? t('common:code.noOutput')} collapsible />
   }
 
   const isFileOpen = (file: GeneratedFile, index: number) => openFiles[file.id] ?? index === 0
@@ -55,7 +57,7 @@ export default function CodeOutput({ value, emptyLabel = 'No output yet.' }: Cod
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'No generated output to copy.',
+        message: t('output.noGeneratedOutput'),
       })
       return
     }
@@ -65,13 +67,13 @@ export default function CodeOutput({ value, emptyLabel = 'No output yet.' }: Cod
       pushNotification({
         id: crypto.randomUUID(),
         type: 'success',
-        message: 'Generated output copied to clipboard.',
+        message: t('output.copied'),
       })
     } catch {
       pushNotification({
         id: crypto.randomUUID(),
         type: 'error',
-        message: 'Copy failed. Check browser clipboard permission.',
+        message: t('common:clipboard.copyFailed'),
       })
     }
   }
@@ -80,15 +82,17 @@ export default function CodeOutput({ value, emptyLabel = 'No output yet.' }: Cod
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-white/10 bg-console-950 px-3 py-2">
         <div>
-          <span className="text-xs font-medium text-slate-300">{files.length} generated files</span>
-          <span className="ml-2 text-xs text-slate-500">inspect, fold, or copy output</span>
+          <span className="text-xs font-medium text-slate-300">
+            {t('output.generatedFiles', { count: files.length })}
+          </span>
+          <span className="ml-2 text-xs text-slate-500">{t('output.inspect')}</span>
         </div>
         <div className="flex items-center gap-2">
           <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={() => setAllFilesOpen(!allOpen)}>
-            {allOpen ? 'Collapse all' : 'Expand all'}
+            {allOpen ? t('common:code.collapseAll') : t('common:code.expandAll')}
           </button>
           <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={() => void copyAllFiles()}>
-            Copy all
+            {t('common:clipboard.copyAll')}
           </button>
         </div>
       </div>
@@ -110,12 +114,12 @@ export default function CodeOutput({ value, emptyLabel = 'No output yet.' }: Cod
             >
               <span className="min-w-0 truncate text-sm font-medium text-slate-100">{file.path}</span>
               <span className="shrink-0 rounded-md border border-white/10 px-2 py-1 text-xs text-slate-400">
-                {isOpen ? 'Collapse' : 'Expand'}
+                {isOpen ? t('common:code.collapse') : t('common:code.expand')}
               </span>
             </button>
             {isOpen ? (
               <div className="border-t border-white/10 p-3">
-                <CodeBlock value={file.code} emptyLabel="File output is empty." collapsible />
+                <CodeBlock value={file.code} emptyLabel={t('output.fileEmpty')} collapsible />
               </div>
             ) : null}
           </div>

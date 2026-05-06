@@ -1,25 +1,32 @@
 import { getApiBaseUrl } from '../../../api/client'
+import { useNotificationStore } from '../../../store/uiStore'
 
 export function useSettingsPage() {
+  const language = useNotificationStore((state) => state.language)
+  const setLanguage = useNotificationStore((state) => state.setLanguage)
+
   return {
+    language,
+    setLanguage,
     runtimeValues: [
       {
-        label: 'API base URL',
-        value: getApiBaseUrl() || 'same-origin / Vite proxy',
+        labelKey: 'settings.runtimeLabels.apiBaseUrl',
+        value: getApiBaseUrl(),
+        valueKey: 'settings.values.sameOriginProxy',
       },
       {
-        label: 'Compiler endpoint',
+        labelKey: 'settings.runtimeLabels.compilerEndpoint',
         value: '/api/compiler/compile',
       },
       {
-        label: 'Orchestrator endpoint',
+        labelKey: 'settings.runtimeLabels.orchestratorEndpoint',
         value: '/api/orchestrator/run',
       },
     ],
     executionContract: [
-      'DSL Editor sends YAML text through the compiler request body.',
-      'Run sends the same DSL text to the orchestrator as the requirement field.',
-      'Timeline status is derived from actual orchestrator lifecycle and response fields.',
+      'settings.contract.compiler',
+      'settings.contract.orchestrator',
+      'settings.contract.timeline',
     ],
   }
 }

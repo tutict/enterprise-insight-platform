@@ -4,7 +4,7 @@ import i18n from '../../../i18n'
 import type { RunConfig } from '../model/runConfig'
 import type { RunEvent, StepKey } from '../model/runEvent'
 
-type BackendRunEvent = {
+export type BackendRunEvent = {
   runId: string
   type: string
   step?: StepKey
@@ -33,7 +33,7 @@ const getPayloadString = (payload: Record<string, unknown> | undefined, key: str
 
 const getStepLabel = (step: StepKey) => i18n.t(`run:steps.${step}`)
 
-const normalizeRunEvent = (event: BackendRunEvent, eventId?: string): RunEvent => {
+export const normalizeRunEvent = (event: BackendRunEvent, eventId?: string): RunEvent => {
   const payload = event.payload ?? {}
   const step = event.step ?? 'compile'
   const base = {

@@ -1,5 +1,11 @@
 import { apiRequest, getApiBaseUrl } from '../client'
-import type { GraphCompileResult, GraphDefinition, GraphRunRequest, GraphRunStartResponse } from '../types/graph.types'
+import type {
+  GraphCompileResult,
+  GraphDefinition,
+  GraphRunRequest,
+  GraphRunStartResponse,
+  PlaybookTemplate,
+} from '../types/graph.types'
 
 export function getGraphStreamUrl(runId: string, lastEventId?: string) {
   const baseUrl = getApiBaseUrl()
@@ -25,4 +31,8 @@ export function compileGraph(graph: GraphDefinition) {
     method: 'POST',
     body: graph,
   })
+}
+
+export function listPlaybookTemplates() {
+  return apiRequest<PlaybookTemplate[]>('/api/graph/playbooks')
 }

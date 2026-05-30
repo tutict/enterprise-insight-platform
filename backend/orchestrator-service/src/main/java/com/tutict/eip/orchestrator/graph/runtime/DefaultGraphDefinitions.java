@@ -14,8 +14,8 @@ public final class DefaultGraphDefinitions {
 
     public static GraphDefinition compileGenerateVerifyRepair(int maxIterations, int requiredRepairIterations) {
         GraphDefinition graph = new GraphDefinition();
-        graph.setId("visual-builder-repair-loop");
-        graph.setName("Visual Builder Repair Loop");
+        graph.setId("compile-generate-verify-repair");
+        graph.setName("Compile Generate Verify Repair");
         graph.setStartNodeId("start");
         graph.setMaxIterations(maxIterations);
         GraphNode start = new GraphNode("start", "start", "start");
@@ -46,6 +46,9 @@ public final class DefaultGraphDefinitions {
 
         graph.setEdges(List.of(startGenerate, generateVerify, verifyEnd, verifyRepair, repairGenerate));
         graph.setMetadata(new LinkedHashMap<>());
+        graph.getMetadata().put("playbookId", PlaybookTemplateService.DEFAULT_PLAYBOOK_ID);
+        graph.getMetadata().put("playbookName", "Compile Generate Verify Repair");
+        graph.getMetadata().put("source", "fde-delivery-playbook");
         graph.getMetadata().put("requiredRepairIterations", requiredRepairIterations);
         return graph;
     }

@@ -1,9 +1,9 @@
 {
   "app": {
-    "brand": "AI 编排器",
-    "console": "控制台",
-    "heading": "编排控制台",
-    "eyebrow": "工程 AI"
+    "brand": "FDE 工作台",
+    "console": "交付控制台",
+    "heading": "FDE 交付工作台",
+    "eyebrow": "AI 辅助方案落地"
   },
   "api": {
     "label": "API",
@@ -21,18 +21,18 @@
     "signOut": "退出登录",
     "username": "用户名",
     "password": "密码",
-    "description": "访问编译器、编排器和运行历史。",
+    "description": "访问交付 Playbook、运行与证据。",
     "failed": "登录失败",
     "signedIn": "登录成功。",
     "demoHint": "演示后端接受任意密码。管理员角色请使用 admin。"
   },
   "nav": {
-    "dsl": "DSL 编辑器",
-    "graph": "图编排",
-    "run": "运行",
-    "runs": "运行历史",
+    "dsl": "需求 DSL",
+    "graph": "Playbook",
+    "run": "交付运行",
+    "runs": "交付证据",
     "settings": "设置",
-    "pipeline": "流水线",
+    "pipeline": "交付闭环",
     "steps": {
       "compile": "编译",
       "generate": "生成",
@@ -64,12 +64,14 @@
   },
   "graph": {
     "builder": {
-      "title": "图编排构建器",
-      "description": "构建节点和边；执行逻辑保留在后端图运行时。",
+      "title": "交付 Playbook 构建器",
+      "description": "构建可复用交付 Playbook；执行逻辑保留在后端运行时。",
       "compile": "编译",
       "generatePrompt": "生成 Prompt",
       "generatingPrompt": "生成中...",
-      "runGraph": "运行图"
+      "runGraph": "运行 Playbook",
+      "playbook": "Playbook：",
+      "loadPlaybook": "加载"
     },
     "prompt": {
       "title": "生成的 Prompt",
@@ -85,8 +87,8 @@
       "events": "事件数：{{count}}"
     },
     "metadata": {
-      "title": "图元数据",
-      "defaultGraph": "默认图",
+      "title": "Playbook 元数据",
+      "defaultGraph": "默认 Playbook",
       "defaultGraphPath": "编译 -> 生成 -> 验证 -> 修复循环"
     },
     "notifications": {
@@ -99,7 +101,9 @@
       "noPromptToCopy": "暂无可复制的生成 Prompt。",
       "promptCopied": "Prompt 已复制。",
       "runRequested": "图运行已请求。",
-      "runFailed": "图运行失败。"
+      "runFailed": "图运行失败。",
+      "playbookLoaded": "已加载 {{name}}。",
+      "playbookLoadFailed": "加载 Playbook 失败。"
     }
   },
   "status": {

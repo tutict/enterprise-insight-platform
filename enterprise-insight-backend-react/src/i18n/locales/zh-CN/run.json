@@ -1,7 +1,7 @@
 {
   "run": {
-    "title": "运行",
-    "execute": "运行",
+    "title": "交付运行",
+    "execute": "启动交付运行",
     "running": "运行中...",
     "statusRuntime": "运行时：{{status}}",
     "statusStream": "事件流：{{state}}",
@@ -23,8 +23,8 @@
     "emptyOutput": "运行编排器后可查看生成代码输出。",
     "workflowGraph": "工作流图",
     "workflowPath": "编译 -> 生成 -> 验证 -> 修复",
-    "metadata": "运行元数据",
-    "runId": "运行 ID",
+    "metadata": "交付元数据",
+    "runId": "交付运行 ID",
     "attempts": "尝试次数",
     "projectRoot": "项目根目录",
     "requested": "运行已请求。",
@@ -94,10 +94,13 @@
     "fileEmpty": "文件输出为空。"
   },
   "history": {
-    "title": "运行历史",
-    "description": "浏览器本地保存的真实编排响应历史。",
+    "title": "交付证据",
+    "description": "由编排服务端持久化的交付运行证据。",
     "defaultModel": "默认模型",
     "empty": "暂无运行记录。请从运行页面执行一次运行。",
+    "loading": "正在加载交付运行...",
+    "loadFailed": "加载交付运行失败。",
+    "opened": "已打开运行 {{id}}。",
     "generatedOutput": "生成输出",
     "selectRun": "选择一次运行以查看详情。",
     "notFound": "未找到运行记录。"

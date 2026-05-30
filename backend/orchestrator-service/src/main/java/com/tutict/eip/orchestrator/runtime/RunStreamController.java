@@ -1,6 +1,7 @@
 package com.tutict.eip.orchestrator.runtime;
 
 import com.tutict.eip.common.ApiResponse;
+import com.tutict.eip.orchestrator.delivery.DeliveryRunStore;
 import com.tutict.eip.orchestrator.domain.OrchestratorRunRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -21,16 +22,23 @@ public class RunStreamController {
 
     private final RunEventStreamService streamService;
     private final RunExecutionEngine executionEngine;
+    private final DeliveryRunStore deliveryRunStore;
 
-    public RunStreamController(RunEventStreamService streamService, RunExecutionEngine executionEngine) {
+    public RunStreamController(
+            RunEventStreamService streamService,
+            RunExecutionEngine executionEngine,
+            DeliveryRunStore deliveryRunStore
+    ) {
         this.streamService = streamService;
         this.executionEngine = executionEngine;
+        this.deliveryRunStore = deliveryRunStore;
     }
 
     @PostMapping("/run/start")
     public ApiResponse<RunStartResponse> start(@Valid @RequestBody OrchestratorRunRequest request) {
         String runId = streamService.createRun(request.getRunId());
         request.setRunId(runId);
+        deliveryRunStore.create(runId, request);
         executionEngine.executeAsync(runId, request);
         return ApiResponse.ok("run accepted", new RunStartResponse(runId));
     }

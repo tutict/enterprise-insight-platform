@@ -1,15 +1,34 @@
 import { useTranslation } from 'react-i18next'
 import StatusBadge from '../../../shared/components/StatusBadge'
-import type { RunRecord } from '../../run/model/runEvent'
+import type { RunRecord, StepStatus } from '../../run/model/runEvent'
 
 type RunListProps = {
   runs: RunRecord[]
   selectedRunId: string | null
   onSelectRun: (id: string) => void
+  isLoading?: boolean
 }
 
-export default function RunList({ runs, selectedRunId, onSelectRun }: RunListProps) {
+export default function RunList({ runs, selectedRunId, onSelectRun, isLoading = false }: RunListProps) {
   const { t } = useTranslation('run')
+  const statusForRun = (run: RunRecord): StepStatus => {
+    if (run.phase === 'completed' && run.response?.generation.successful) {
+      return 'success'
+    }
+    if (
+      run.phase === 'requested' ||
+      run.phase === 'compiling' ||
+      run.phase === 'generating' ||
+      run.phase === 'verifying' ||
+      run.phase === 'repairing'
+    ) {
+      return 'running'
+    }
+    if (run.phase === 'idle') {
+      return 'idle'
+    }
+    return 'fail'
+  }
 
   return (
     <section className="panel overflow-hidden">
@@ -30,7 +49,7 @@ export default function RunList({ runs, selectedRunId, onSelectRun }: RunListPro
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="truncate text-sm font-medium text-slate-100">{run.id}</span>
-                <StatusBadge status={run.response.generation.successful ? 'success' : 'fail'} />
+                <StatusBadge status={statusForRun(run)} />
               </div>
               <div className="grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
                 <span className="truncate">{run.targetDirectory}</span>
@@ -39,6 +58,8 @@ export default function RunList({ runs, selectedRunId, onSelectRun }: RunListPro
               </div>
             </button>
           ))
+        ) : isLoading ? (
+          <div className="p-8 text-sm text-slate-500">{t('history.loading')}</div>
         ) : (
           <div className="p-8 text-sm text-slate-500">{t('history.empty')}</div>
         )}

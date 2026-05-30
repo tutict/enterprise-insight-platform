@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,7 +37,8 @@ class GraphApiContractTest {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(
                         new GraphCompileController(compileService),
-                        new GraphRunController(streamService, executor, compileService)
+                        new GraphRunController(streamService, executor, compileService),
+                        new PlaybookTemplateController(new PlaybookTemplateService())
                 )
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -76,6 +78,15 @@ class GraphApiContractTest {
                         .content(objectMapper.writeValueAsString(Map.of("graph", graph))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").exists());
+    }
+
+    @Test
+    void playbookEndpointReturnsDefaultDeliveryPlaybook() throws Exception {
+        mockMvc.perform(get("/api/graph/playbooks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[0].id").value("compile-generate-verify-repair"))
+                .andExpect(jsonPath("$.data[0].graph.metadata.playbookId").value("compile-generate-verify-repair"));
     }
 
     private Map<String, Object> validGraph() {

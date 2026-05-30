@@ -1,5 +1,9 @@
 package com.tutict.eip.orchestrator.runtime;
 
+import com.tutict.eip.orchestrator.delivery.DeliveryRunStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -15,10 +19,21 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 public class RunEventStreamService {
 
+    private static final Logger log = LoggerFactory.getLogger(RunEventStreamService.class);
     private static final long EMITTER_TIMEOUT_MILLIS = 30L * 60L * 1000L;
     private static final long RECONNECT_TIME_MILLIS = 2_000L;
 
     private final ConcurrentMap<String, RunStream> streams = new ConcurrentHashMap<>();
+    private final DeliveryRunStore deliveryRunStore;
+
+    public RunEventStreamService() {
+        this(null);
+    }
+
+    @Autowired
+    public RunEventStreamService(DeliveryRunStore deliveryRunStore) {
+        this.deliveryRunStore = deliveryRunStore;
+    }
 
     public String createRun(String requestedRunId) {
         String runId = requestedRunId == null || requestedRunId.isBlank()
@@ -51,6 +66,7 @@ public class RunEventStreamService {
         }
         event.setEventId(String.valueOf(stream.sequence.incrementAndGet()));
         stream.events.add(event);
+        persist(event);
 
         for (SseEmitter emitter : stream.emitters) {
             send(stream, emitter, event);
@@ -150,6 +166,17 @@ public class RunEventStreamService {
 
     private boolean isTerminal(String type) {
         return "RUN_COMPLETED".equals(type) || "RUN_FAILED".equals(type) || "RUN_CANCELLED".equals(type);
+    }
+
+    private void persist(RunEvent event) {
+        if (deliveryRunStore == null) {
+            return;
+        }
+        try {
+            deliveryRunStore.appendEvent(event);
+        } catch (RuntimeException ex) {
+            log.warn("Failed to persist delivery run event runId={} type={}", event.getRunId(), event.getType(), ex);
+        }
     }
 
     private static final class RunStream {

@@ -1,6 +1,5 @@
 package com.tutict.eip.orchestrator.runtime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.Instant;
@@ -10,7 +9,6 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RunEvent {
 
-    @JsonIgnore
     private String eventId;
 
     private String runId;

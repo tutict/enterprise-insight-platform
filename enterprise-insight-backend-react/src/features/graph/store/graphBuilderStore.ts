@@ -36,6 +36,9 @@ type ValidationResult = {
 }
 
 type GraphBuilderState = {
+  graphId: string
+  graphName: string
+  graphMetadata: Record<string, unknown>
   nodes: BuilderNode[]
   edges: BuilderEdge[]
   selectedNodeId: string | null
@@ -256,6 +259,14 @@ const normalizeState = (state: Pick<GraphBuilderState, 'nodes' | 'edges'>) => ({
 })
 
 export const useGraphBuilderStore = create<GraphBuilderState>((set, get) => ({
+  graphId: 'compile-generate-verify-repair',
+  graphName: 'Compile Generate Verify Repair',
+  graphMetadata: {
+    source: 'fde-delivery-playbook',
+    playbookId: 'compile-generate-verify-repair',
+    playbookName: 'Compile Generate Verify Repair',
+    requiredRepairIterations: 1,
+  },
   nodes: defaultNodes,
   edges: defaultEdges,
   selectedNodeId: null,
@@ -385,14 +396,23 @@ export const useGraphBuilderStore = create<GraphBuilderState>((set, get) => ({
       const edges: BuilderEdge[] = graph.edges.map((edge) =>
         createEdge(edge.id, edge.source, edge.target, edge.condition, edge.maxIterations),
       )
-      return { nodes, edges, selectedNodeId: null, selectedEdgeId: null, ...normalizeState({ nodes, edges }) }
+      return {
+        graphId: graph.id,
+        graphName: graph.name,
+        graphMetadata: graph.metadata ?? {},
+        nodes,
+        edges,
+        selectedNodeId: null,
+        selectedEdgeId: null,
+        ...normalizeState({ nodes, edges }),
+      }
     }),
   toGraphDefinition: () => {
-    const { nodes, edges } = get()
+    const { graphId, graphName, graphMetadata, nodes, edges } = get()
     const startNode = nodes.find((node) => node.data.type === 'start') ?? nodes[0]
     return {
-      id: 'visual-builder-graph',
-      name: 'Visual Builder Graph',
+      id: graphId,
+      name: graphName,
       startNodeId: startNode?.id ?? '',
       maxIterations: Math.max(
         GRAPH_MAX_ITERATIONS,
@@ -415,10 +435,7 @@ export const useGraphBuilderStore = create<GraphBuilderState>((set, get) => ({
         maxIterations: edge.data?.maxIterations,
         label: String(edge.label ?? edge.data?.condition ?? ''),
       })),
-      metadata: {
-        source: 'visual-builder',
-        requiredRepairIterations: 1,
-      },
+      metadata: graphMetadata,
     }
   },
 }))

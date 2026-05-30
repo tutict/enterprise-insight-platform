@@ -14,3 +14,8 @@ agent:
     retry-backoff: 1s
     verification-timeout: 3m
     output-root: ./agent-output
+
+delivery:
+  runs:
+    storage-root: ${EIP_DELIVERY_RUNS_DIR:../runtime-logs/delivery-runs}
+    max-list-size: 100

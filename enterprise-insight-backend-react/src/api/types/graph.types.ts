@@ -73,3 +73,12 @@ export type GraphCompileResult = {
   errors: string[]
   warnings: string[]
 }
+
+export type PlaybookTemplate = {
+  id: string
+  name: string
+  description: string
+  graph: GraphDefinition
+  defaultRunConfig: Record<string, unknown>
+  evidence: string[]
+}

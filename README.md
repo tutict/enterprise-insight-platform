@@ -12,6 +12,17 @@ Enterprise Insight Platform brings AI Workflow Builder and Agent execution capab
 
 This project is not a generic chat application. It is an engineering control plane for AI-assisted delivery. It transforms natural-language requirements into structured DSL and Harness Prompts, generates project files through an Agent Adapter, and improves controllability through verification commands and auto-repair loops.
 
+当前产品方向已进一步收束为 **FDE 交付工作台**：面向 Forward Deployed Engineer 的客户现场交付场景，把需求结构化、交付 Playbook、Agent 执行、验证、修复和运行证据串成一条可审计链路。
+
+当前已落地：
+
+- 前端品牌与导航已调整为 FDE Delivery Workbench、Delivery Run、Run Evidence。
+- 默认 `compile -> generate -> verify -> repair` 图已包装为第一个交付 Playbook：`compile-generate-verify-repair`。
+- 交付运行记录已从浏览器 localStorage 下沉到服务端 `DeliveryRun` 持久化。
+- 编排服务会把运行请求、SSE 事件、最终响应和状态写入 `runtime-logs/delivery-runs/*.json`。
+- Run Evidence 页面通过 `/api/orchestrator/delivery-runs` 查询可复现的交付证据。
+- Playbooks 页面通过 `/api/graph/playbooks` 加载可复用 Playbook 模板。
+
 核心链路 / Core flow:
 
 ```text
@@ -78,7 +89,7 @@ Gateway Service :8080 / 网关服务
 | `gateway-service` | JWT 鉴权、角色校验、服务路由 / JWT auth, role checks, routing | `/api/**` |
 | `auth-service` | 登录与 Token 签发 / Login and token issuing | `POST /api/auth/login` |
 | `harness-compiler` | 需求或图编译为 DSL 与 Prompt / Compile requirements or graphs into DSL and prompts | `POST /api/compiler/compile`, `POST /api/compiler/from-graph` |
-| `orchestrator-service` | 编排执行、Graph runtime、SSE 事件 / Orchestration, graph runtime, SSE events | `POST /api/orchestrator/run`, `POST /api/graph/compile`, `POST /api/graph/run`, `GET /api/graph/run/stream/{runId}` |
+| `orchestrator-service` | 编排执行、交付运行证据、Graph runtime、SSE 事件 / Orchestration, delivery run evidence, graph runtime, SSE events | `POST /api/orchestrator/run/start`, `GET /api/orchestrator/delivery-runs`, `GET /api/graph/playbooks`, `POST /api/graph/run` |
 | `agent-adapter` | LLM 调用、文件写入、验证与修复 / LLM calls, file writing, verification, repair | `POST /api/agent-adapter/**` |
 
 ## 快速启动 / Quick Start
@@ -201,8 +212,9 @@ thresholds                       PASS
 
 ## 路线图 / Roadmap
 
-- FDE 工具化方向见 / FDE tooling direction: [docs/fde-tooling-roadmap.md](docs/fde-tooling-roadmap.md).
-- 持久化 graph definition 与 run event log / Persist graph definitions and run event logs.
+- FDE 交付工作台路线图见：[docs/fde-tooling-roadmap.md](docs/fde-tooling-roadmap.md)。
+- 交付运行与 Playbook 接口见：[docs/api.md](docs/api.md)。
+- 将当前 JSON 文件持久化迁移为 H2/PostgreSQL repository。
 - 增加节点级耗时指标与 profiling 导出 / Add node-level timing metrics and profiling export.
 - 将实验分配接入 orchestrator request metadata / Promote experiment assignment into orchestrator request metadata.
 - 增加 OpenAPI 生成与 schema diff contract checks / Add OpenAPI generation and schema-diff contract checks.

@@ -1,18 +1,14 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { listDeliveryRuns } from '../../../api/modules/deliveryRuns.api'
+import type { DeliveryRunRecord } from '../../../api/types/delivery.types'
 import { useNotificationStore } from '../../../store/uiStore'
-import type { ExecutionPhase, RunRecord, StepState, TimelineStep } from '../../run/model/runEvent'
-import { useHistoryStore } from '../store/historyStore'
+import { normalizeRunEvent, type BackendRunEvent } from '../../run/engine/runSSEAdapter'
+import type { ExecutionPhase, RunEvent, RunRecord, StepState, TimelineStep } from '../../run/model/runEvent'
+import { createInitialExecution, runReducer } from '../../run/store/runStore'
 
 type LegacyStepState = Omit<StepState, 'status'> & {
   status: StepState['status'] | 'pending'
-}
-
-type PersistedRunRecord = RunRecord & {
-  timeline?: LegacyStepState[]
-  steps: LegacyStepState[]
-  phase?: ExecutionPhase
-  eventLog?: RunRecord['eventLog']
 }
 
 const normalizeStep = (step: LegacyStepState | TimelineStep): StepState => ({
@@ -38,33 +34,96 @@ const ensureRepairStep = (steps: StepState[]): StepState[] => {
   ]
 }
 
-const normalizeRunRecord = (record: PersistedRunRecord | undefined) => {
-  if (!record) {
-    return null
-  }
-  const steps = ensureRepairStep((record.steps ?? record.timeline ?? []).map(normalizeStep))
+const toRunEvents = (record: DeliveryRunRecord): RunEvent[] =>
+  (record.events ?? []).map((event) =>
+    normalizeRunEvent(event as BackendRunEvent, event.eventId),
+  )
+
+const deriveExecution = (events: RunEvent[]) =>
+  events.reduce((execution, event) => runReducer(execution, event), createInitialExecution())
+
+const normalizeDeliveryRun = (record: DeliveryRunRecord): RunRecord => {
+  const eventLog = toRunEvents(record)
+  const execution = deriveExecution(eventLog)
+  const request = record.request
+  const response = record.response ?? execution.result ?? null
+  const phase = execution.phase === 'idle'
+    ? statusToPhase(record.status)
+    : execution.phase
 
   return {
-    ...record,
-    phase: record.phase ?? (record.response.generation.successful ? 'completed' : 'failed'),
-    steps,
-    eventLog: record.eventLog ?? [],
+    id: record.runId,
+    dsl: request?.requirement ?? response?.dsl?.requirement ?? '',
+    targetDirectory: request?.targetDirectory ?? response?.generation?.projectRoot ?? '-',
+    model: request?.model ?? '',
+    createdAt: response?.createdAt ?? record.createdAt,
+    response,
+    phase,
+    steps: ensureRepairStep(execution.steps.map(normalizeStep)),
+    eventLog,
+  }
+}
+
+const statusToPhase = (status: DeliveryRunRecord['status']): ExecutionPhase => {
+  switch (status) {
+    case 'COMPLETED':
+      return 'completed'
+    case 'FAILED':
+      return 'failed'
+    case 'CANCELLED':
+      return 'cancelled'
+    case 'RUNNING':
+      return 'requested'
+    default:
+      return 'idle'
   }
 }
 
 export function useRunsPage() {
   const { t } = useTranslation('run')
-  const storedRuns = useHistoryStore((state) => state.runs) as PersistedRunRecord[]
-  const selectedRunId = useHistoryStore((state) => state.selectedRunId)
-  const selectStoredRun = useHistoryStore((state) => state.selectRun)
+  const [records, setRecords] = useState<DeliveryRunRecord[]>([])
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const pushNotification = useNotificationStore((state) => state.push)
-  const runs = useMemo(
-    () => storedRuns.map((run) => normalizeRunRecord(run)).filter((run): run is RunRecord => Boolean(run)),
-    [storedRuns],
-  )
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadRuns = async () => {
+      setIsLoading(true)
+      try {
+        const loaded = await listDeliveryRuns()
+        if (cancelled) {
+          return
+        }
+        setRecords(loaded)
+        setSelectedRunId((current) => current ?? loaded[0]?.runId ?? null)
+      } catch (err) {
+        if (!cancelled) {
+          pushNotification({
+            id: crypto.randomUUID(),
+            type: 'error',
+            message: err instanceof Error ? err.message : t('history.loadFailed'),
+          })
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadRuns()
+
+    return () => {
+      cancelled = true
+    }
+  }, [pushNotification, t])
+
+  const runs = useMemo(() => records.map(normalizeDeliveryRun), [records])
 
   const selectedRun = useMemo(
-    () => normalizeRunRecord(runs.find((run) => run.id === selectedRunId) ?? runs[0]),
+    () => runs.find((run) => run.id === selectedRunId) ?? runs[0] ?? null,
     [runs, selectedRunId],
   )
 
@@ -79,11 +138,11 @@ export function useRunsPage() {
       return
     }
 
-    selectStoredRun(id)
+    setSelectedRunId(id)
     pushNotification({
       id: crypto.randomUUID(),
       type: 'info',
-      message: `Opened run ${id}.`,
+      message: t('history.opened', { id }),
     })
   }
 
@@ -91,5 +150,6 @@ export function useRunsPage() {
     runs,
     selectedRun,
     selectRun,
+    isLoading,
   }
 }

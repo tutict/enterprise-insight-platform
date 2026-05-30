@@ -36,10 +36,12 @@ export default function RunDetails({ run }: RunDetailsProps) {
             <FlowCanvas nodes={workflow.nodes} edges={workflow.edges} />
           </div>
           <ExecutionTimeline steps={run.steps} />
-          <div className="panel p-5">
-            <h3 className="mb-3 text-sm font-semibold text-slate-100">{t('history.generatedOutput')}</h3>
-            <CodeOutput value={run.response.generation.finalOutput} />
-          </div>
+          {run.response ? (
+            <div className="panel p-5">
+              <h3 className="mb-3 text-sm font-semibold text-slate-100">{t('history.generatedOutput')}</h3>
+              <CodeOutput value={run.response.generation.finalOutput} />
+            </div>
+          ) : null}
           <div className="panel p-5">
             <h3 className="mb-3 text-sm font-semibold text-slate-100">{t('dsl:editor.title')}</h3>
             <CodeBlock value={run.dsl} collapsible />

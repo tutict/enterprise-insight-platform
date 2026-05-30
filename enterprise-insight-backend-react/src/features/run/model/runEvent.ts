@@ -80,7 +80,7 @@ export type RunRecord = {
   targetDirectory: string
   model: string
   createdAt: string
-  response: OrchestratorRunResponse
+  response: OrchestratorRunResponse | null
   phase: ExecutionPhase
   steps: StepState[]
   eventLog: RunEvent[]

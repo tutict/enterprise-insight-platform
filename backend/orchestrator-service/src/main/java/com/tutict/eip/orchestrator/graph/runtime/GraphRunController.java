@@ -21,15 +21,26 @@ public class GraphRunController {
     private final GraphEventStreamService streamService;
     private final GraphExecutor graphExecutor;
     private final GraphCompileService compileService;
+    private final PlaybookTemplateService playbookTemplateService;
 
     public GraphRunController(
             GraphEventStreamService streamService,
             GraphExecutor graphExecutor,
             GraphCompileService compileService
     ) {
+        this(streamService, graphExecutor, compileService, new PlaybookTemplateService());
+    }
+
+    public GraphRunController(
+            GraphEventStreamService streamService,
+            GraphExecutor graphExecutor,
+            GraphCompileService compileService,
+            PlaybookTemplateService playbookTemplateService
+    ) {
         this.streamService = streamService;
         this.graphExecutor = graphExecutor;
         this.compileService = compileService;
+        this.playbookTemplateService = playbookTemplateService;
     }
 
     @PostMapping
@@ -37,10 +48,10 @@ public class GraphRunController {
         GraphRunRequest actualRequest = request == null ? new GraphRunRequest() : request;
         String runId = streamService.createRun(actualRequest.getRunId());
         GraphDefinition graph = actualRequest.getGraph() == null
-                ? DefaultGraphDefinitions.compileGenerateVerifyRepair(
+                ? playbookTemplateService.defaultDeliveryPlaybook(
                         actualRequest.getMaxIterations(),
                         actualRequest.getRequiredRepairIterations()
-                )
+                ).getGraph()
                 : actualRequest.getGraph();
         GraphCompileResult compileResult = compileService.compile(graph);
         if (!compileResult.isValid()) {

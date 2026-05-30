@@ -1,9 +1,9 @@
 {
   "app": {
-    "brand": "AI Orchestrator",
-    "console": "Control Console",
-    "heading": "Orchestrator Console",
-    "eyebrow": "Engineering AI"
+    "brand": "FDE Workbench",
+    "console": "Delivery Console",
+    "heading": "FDE Delivery Workbench",
+    "eyebrow": "AI-assisted implementation"
   },
   "api": {
     "label": "API",
@@ -21,18 +21,18 @@
     "signOut": "Sign out",
     "username": "Username",
     "password": "Password",
-    "description": "Access the compiler, orchestrator, and run history.",
+    "description": "Access delivery playbooks, runs, and evidence.",
     "failed": "Sign in failed",
     "signedIn": "Signed in successfully.",
     "demoHint": "Demo backend accepts any password. Use admin for admin role."
   },
   "nav": {
-    "dsl": "DSL Editor",
-    "graph": "Graph",
-    "run": "Run",
-    "runs": "Runs",
+    "dsl": "Requirement DSL",
+    "graph": "Playbooks",
+    "run": "Delivery Run",
+    "runs": "Run Evidence",
     "settings": "Settings",
-    "pipeline": "Pipeline",
+    "pipeline": "Delivery Loop",
     "steps": {
       "compile": "compile",
       "generate": "generate",
@@ -64,12 +64,14 @@
   },
   "graph": {
     "builder": {
-      "title": "Graph Builder",
-      "description": "Build nodes and edges; execution stays in the backend graph runtime.",
+      "title": "Delivery Playbook Builder",
+      "description": "Build reusable delivery playbooks; execution stays in the backend runtime.",
       "compile": "Compile",
       "generatePrompt": "Generate Prompt",
       "generatingPrompt": "Generating...",
-      "runGraph": "Run graph"
+      "runGraph": "Run playbook",
+      "playbook": "Playbook:",
+      "loadPlaybook": "Load"
     },
     "prompt": {
       "title": "Generated Prompt",
@@ -85,8 +87,8 @@
       "events": "events: {{count}}"
     },
     "metadata": {
-      "title": "Graph Metadata",
-      "defaultGraph": "Default graph",
+      "title": "Playbook Metadata",
+      "defaultGraph": "Default playbook",
       "defaultGraphPath": "compile -> generate -> verify -> repair loop"
     },
     "notifications": {
@@ -99,7 +101,9 @@
       "noPromptToCopy": "No generated prompt to copy.",
       "promptCopied": "Prompt copied.",
       "runRequested": "Graph run requested.",
-      "runFailed": "Graph run failed."
+      "runFailed": "Graph run failed.",
+      "playbookLoaded": "Loaded {{name}}.",
+      "playbookLoadFailed": "Failed to load playbooks."
     }
   },
   "status": {

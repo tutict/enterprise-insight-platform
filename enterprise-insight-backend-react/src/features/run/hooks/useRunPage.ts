@@ -25,7 +25,6 @@ export function useRunPage() {
 
   const savedDsls = useHistoryStore((state) => state.savedDsls)
   const selectSavedDsl = useHistoryStore((state) => state.selectSavedDsl)
-  const addRun = useHistoryStore((state) => state.addRun)
   const pushNotification = useNotificationStore((state) => state.push)
 
   const runConfig = useMemo(
@@ -64,18 +63,6 @@ export function useRunPage() {
         })
         return
       }
-
-      addRun({
-        id: response.runId || currentExecution.id || crypto.randomUUID(),
-        dsl: dslText,
-        targetDirectory,
-        model,
-        createdAt: response.createdAt,
-        response,
-        phase: currentExecution.phase,
-        steps: currentExecution.steps,
-        eventLog: currentExecution.eventLog,
-      })
 
       pushNotification({
         id: crypto.randomUUID(),

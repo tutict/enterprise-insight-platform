@@ -1,7 +1,7 @@
 {
   "run": {
-    "title": "Run",
-    "execute": "Run",
+    "title": "Delivery Run",
+    "execute": "Start delivery run",
     "running": "Running...",
     "statusRuntime": "runtime: {{status}}",
     "statusStream": "stream: {{state}}",
@@ -23,8 +23,8 @@
     "emptyOutput": "Run the orchestrator to see generated code output.",
     "workflowGraph": "Workflow Graph",
     "workflowPath": "compile -> generate -> verify -> repair",
-    "metadata": "Run Metadata",
-    "runId": "Run ID",
+    "metadata": "Delivery Metadata",
+    "runId": "Delivery Run ID",
     "attempts": "Attempts",
     "projectRoot": "Project root",
     "requested": "Run requested.",
@@ -94,10 +94,13 @@
     "fileEmpty": "File output is empty."
   },
   "history": {
-    "title": "Runs",
-    "description": "Local browser history from real orchestrator responses.",
+    "title": "Run Evidence",
+    "description": "Server-side delivery run evidence persisted by the orchestrator.",
     "defaultModel": "default model",
     "empty": "No runs yet. Execute a run from the Run page.",
+    "loading": "Loading delivery runs...",
+    "loadFailed": "Failed to load delivery runs.",
+    "opened": "Opened run {{id}}.",
     "generatedOutput": "Generated Output",
     "selectRun": "Select a run to inspect details.",
     "notFound": "Run record was not found."

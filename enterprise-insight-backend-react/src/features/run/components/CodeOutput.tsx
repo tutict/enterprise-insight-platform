@@ -80,7 +80,7 @@ export default function CodeOutput({ value, emptyLabel }: CodeOutputProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-white/10 bg-console-950 px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-700/80 bg-console-950 px-3 py-2">
         <div>
           <span className="text-xs font-medium text-slate-300">
             {t('output.generatedFiles', { count: files.length })}
@@ -100,10 +100,10 @@ export default function CodeOutput({ value, emptyLabel }: CodeOutputProps) {
       {files.map((file, index) => {
         const isOpen = isFileOpen(file, index)
         return (
-          <div key={file.id} className="overflow-hidden rounded-lg border border-white/10 bg-console-950">
+          <div key={file.id} className="overflow-hidden rounded-lg border border-slate-700/80 bg-console-950">
             <button
               type="button"
-              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-white/[0.04]"
+              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-slate-800/50"
               aria-expanded={isOpen}
               onClick={() =>
                 setOpenFiles((current) => ({
@@ -113,12 +113,12 @@ export default function CodeOutput({ value, emptyLabel }: CodeOutputProps) {
               }
             >
               <span className="min-w-0 truncate text-sm font-medium text-slate-100">{file.path}</span>
-              <span className="shrink-0 rounded-md border border-white/10 px-2 py-1 text-xs text-slate-400">
+              <span className="shrink-0 rounded-md border border-slate-700/80 px-2 py-1 text-xs text-slate-400">
                 {isOpen ? t('common:code.collapse') : t('common:code.expand')}
               </span>
             </button>
             {isOpen ? (
-              <div className="border-t border-white/10 p-3">
+              <div className="border-t border-slate-700/80 p-3">
                 <CodeBlock value={file.code} emptyLabel={t('output.fileEmpty')} collapsible />
               </div>
             ) : null}

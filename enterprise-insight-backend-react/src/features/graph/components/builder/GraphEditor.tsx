@@ -73,13 +73,13 @@ function GraphEditorContent() {
   )
 
   return (
-    <section className="overflow-hidden rounded-lg border border-white/10 bg-console-900/85">
-      <div className="grid min-h-[620px] grid-cols-1 lg:grid-cols-[180px_minmax(0,1fr)_320px]">
-        <aside className="border-b border-white/10 p-4 lg:border-b-0 lg:border-r">
+    <section className="panel overflow-hidden">
+      <div className="grid min-h-[620px] grid-cols-1 lg:grid-cols-[190px_minmax(0,1fr)_320px]">
+        <aside className="border-b border-slate-700/80 p-4 lg:border-b-0 lg:border-r lg:border-slate-700/80">
           <NodePalette addNode={addNode} />
           <div className="mt-6 space-y-2">
             <p className="text-xs font-medium uppercase text-slate-500">Validation</p>
-            <div className="rounded-md border border-white/10 bg-console-950 p-3 text-xs">
+            <div className="rounded-md border border-slate-700/80 bg-console-950 p-3 text-xs">
               <p className={validation.valid ? 'text-emerald-300' : 'text-red-300'}>
                 {validation.valid ? 'valid' : 'invalid'}
               </p>
@@ -94,7 +94,7 @@ function GraphEditorContent() {
 
         <div
           ref={flowWrapperRef}
-          className="min-h-[520px] min-w-0"
+          className="min-h-[520px] min-w-0 lg:min-h-[620px]"
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >

@@ -53,7 +53,7 @@ export default function DslEditorWorkspace({
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <input
-            className="field w-72"
+            className="field w-full sm:w-72"
             value={name}
             placeholder={t('editor.namePlaceholder')}
             onChange={(event) => setName(event.target.value)}

@@ -21,7 +21,7 @@ const nodeTypes: NodeTypes = {
 
 export default function FlowCanvas({ nodes, edges, className = '' }: FlowCanvasProps) {
   return (
-    <div className={`h-72 overflow-hidden rounded-lg border border-white/10 bg-console-950 ${className}`}>
+    <div className={`h-72 overflow-hidden rounded-lg border border-slate-700/80 bg-console-950 ${className}`}>
       <ReactFlow
         nodes={nodes}
         edges={edges}

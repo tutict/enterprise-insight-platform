@@ -11,7 +11,7 @@ type RunsWorkspaceProps = {
 
 export default function RunsWorkspace({ runs, selectedRun, selectRun, isLoading = false }: RunsWorkspaceProps) {
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(380px,1fr)]">
+    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(380px,1fr)]">
       <RunList runs={runs} selectedRunId={selectedRun?.id ?? null} onSelectRun={selectRun} isLoading={isLoading} />
       <RunDetails run={selectedRun} />
     </div>

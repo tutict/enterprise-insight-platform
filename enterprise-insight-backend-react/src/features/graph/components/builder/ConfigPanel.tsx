@@ -19,7 +19,7 @@ export default function ConfigPanel({
 }: ConfigPanelProps) {
   if (edge) {
     return (
-      <aside className="space-y-4 border-t border-white/10 bg-console-900/80 p-4 lg:border-l lg:border-t-0">
+      <aside className="space-y-4 border-t border-slate-700/80 bg-console-900/80 p-4 lg:border-l lg:border-t-0">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-slate-100">Edge</h3>
@@ -61,7 +61,7 @@ export default function ConfigPanel({
 
   if (!node) {
     return (
-      <aside className="border-t border-white/10 bg-console-900/80 p-4 text-sm text-slate-500 lg:border-l lg:border-t-0">
+      <aside className="grid min-h-48 place-items-center border-t border-slate-700/80 bg-console-900/80 p-4 text-center text-sm text-slate-500 lg:border-l lg:border-t-0">
         Select a node or edge to configure it.
       </aside>
     )
@@ -70,7 +70,7 @@ export default function ConfigPanel({
   const config = node.data.config
 
   return (
-    <aside className="space-y-4 border-t border-white/10 bg-console-900/80 p-4 lg:border-l lg:border-t-0">
+    <aside className="space-y-4 border-t border-slate-700/80 bg-console-900/80 p-4 lg:border-l lg:border-t-0">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-slate-100">Node</h3>
@@ -164,6 +164,7 @@ export default function ConfigPanel({
           </label>
           <label className="flex items-center gap-2 text-sm text-slate-300">
             <input
+              className="h-4 w-4 accent-teal-300"
               type="checkbox"
               checked={Boolean(config.pass ?? true)}
               onChange={(event) => updateNodeConfig(node.id, { pass: event.target.checked })}

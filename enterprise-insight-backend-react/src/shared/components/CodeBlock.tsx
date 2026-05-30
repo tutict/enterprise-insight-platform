@@ -49,12 +49,12 @@ export default function CodeBlock({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-white/10 bg-console-950">
-      <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
+    <div className="overflow-hidden rounded-lg border border-slate-700/80 bg-console-950">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700/80 px-3 py-2">
         <span className="text-xs text-slate-500">
           {value ? t('code.chars', { count: value.length.toLocaleString() }) : t('code.empty')}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {collapsible ? (
             <button
               className="btn-secondary px-2 py-1 text-xs"

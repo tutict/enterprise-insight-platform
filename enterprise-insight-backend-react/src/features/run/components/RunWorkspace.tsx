@@ -91,19 +91,19 @@ export default function RunWorkspace({
             </button>
           </div>
 
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-console-950 px-3 py-2">
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-              <span className="rounded-md border border-white/10 px-2 py-1">
+          <div className="mb-4 grid gap-3 rounded-lg border border-slate-700/80 bg-console-950 p-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="grid gap-2 text-xs text-slate-400 sm:grid-cols-3">
+              <span className="min-h-9 rounded-md border border-slate-700/80 px-2 py-2">
                 {t('run.statusRuntime', { status: formatStatus(runState.status) })}
               </span>
-              <span className="rounded-md border border-white/10 px-2 py-1">
+              <span className="min-h-9 rounded-md border border-slate-700/80 px-2 py-2">
                 {t('run.statusStream', { state: t(`connection.${runState.connectionState}`) })}
               </span>
-              <span className="rounded-md border border-white/10 px-2 py-1">
+              <span className="min-h-9 truncate rounded-md border border-slate-700/80 px-2 py-2">
                 {t('run.statusEvent', { eventId: runState.lastEventId ?? '-' })}
               </span>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 lg:justify-end">
               <button className="btn-secondary px-2 py-1 text-xs" type="button" onClick={controls.pause} disabled={!canPause}>
                 {t('run.pause')}
               </button>
@@ -124,7 +124,7 @@ export default function RunWorkspace({
             </div>
           </div>
 
-          <div className="mb-4 grid gap-3 md:grid-cols-4">
+          <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <label className="space-y-2">
               <span className="text-xs font-medium text-slate-400">{t('run.savedDsl')}</span>
               <select className="field w-full" onChange={(event) => selectDsl(event.target.value)} defaultValue="">
@@ -191,7 +191,7 @@ export default function RunWorkspace({
         <div className="panel p-5">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-100">{t('run.executionResult')}</h3>
-            <span className="rounded-md border border-white/10 px-2 py-1 text-xs text-slate-400">
+            <span className="rounded-md border border-slate-700/80 px-2 py-1 text-xs text-slate-400">
               {resultStatus}
             </span>
           </div>
@@ -214,15 +214,15 @@ export default function RunWorkspace({
         <section className="panel p-5">
           <h3 className="mb-3 text-sm font-semibold text-slate-100">{t('run.metadata')}</h3>
           <div className="space-y-3 text-sm text-slate-300">
-            <div className="flex justify-between gap-4">
+            <div className="grid gap-1 rounded-md border border-slate-700/80 bg-console-950 px-3 py-2">
               <span className="text-slate-500">{t('run.runId')}</span>
               <span className="truncate">{runState.result?.runId ?? runState.runId ?? '-'}</span>
             </div>
-            <div className="flex justify-between gap-4">
+            <div className="grid gap-1 rounded-md border border-slate-700/80 bg-console-950 px-3 py-2">
               <span className="text-slate-500">{t('run.attempts')}</span>
               <span>{runState.result?.generation.totalAttempts ?? '-'}</span>
             </div>
-            <div className="flex justify-between gap-4">
+            <div className="grid gap-1 rounded-md border border-slate-700/80 bg-console-950 px-3 py-2">
               <span className="text-slate-500">{t('run.projectRoot')}</span>
               <span className="truncate">{runState.result?.generation.projectRoot ?? '-'}</span>
             </div>

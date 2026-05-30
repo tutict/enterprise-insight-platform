@@ -12,7 +12,7 @@ export default function StatusBadge({ status }: { status: StepStatus }) {
   const { t } = useTranslation('run')
 
   return (
-    <span className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium ${statusClass[status]}`}>
+    <span className={`inline-flex min-h-7 items-center whitespace-nowrap rounded-md border px-2 py-1 text-xs font-medium ${statusClass[status]}`}>
       {t(`stepStatus.${status}`)}
     </span>
   )

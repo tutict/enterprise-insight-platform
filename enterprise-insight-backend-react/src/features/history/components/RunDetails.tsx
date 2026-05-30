@@ -48,7 +48,9 @@ export default function RunDetails({ run }: RunDetailsProps) {
           </div>
         </>
       ) : (
-        <div className="panel p-8 text-sm text-slate-500">{t('history.selectRun')}</div>
+        <div className="panel grid min-h-72 place-items-center p-8 text-center text-sm text-slate-500">
+          {t('history.selectRun')}
+        </div>
       )}
     </section>
   )

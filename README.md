@@ -201,6 +201,7 @@ thresholds                       PASS
 
 ## 路线图 / Roadmap
 
+- FDE 工具化方向见 / FDE tooling direction: [docs/fde-tooling-roadmap.md](docs/fde-tooling-roadmap.md).
 - 持久化 graph definition 与 run event log / Persist graph definitions and run event logs.
 - 增加节点级耗时指标与 profiling 导出 / Add node-level timing metrics and profiling export.
 - 将实验分配接入 orchestrator request metadata / Promote experiment assignment into orchestrator request metadata.

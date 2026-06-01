@@ -24,6 +24,16 @@ type GraphRuntimeWorkspaceProps = {
   copyGeneratedPrompt: () => void
 }
 
+const formatConfigValue = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => (Array.isArray(item) ? item.join(' ') : String(item))).join(', ')
+  }
+  if (value && typeof value === 'object') {
+    return JSON.stringify(value)
+  }
+  return String(value ?? '-')
+}
+
 export default function GraphRuntimeWorkspace({
   status,
   connectionState,
@@ -44,6 +54,7 @@ export default function GraphRuntimeWorkspace({
   copyGeneratedPrompt,
 }: GraphRuntimeWorkspaceProps) {
   const { t } = useTranslation(['common', 'run'])
+  const defaultRunConfigEntries = Object.entries(selectedPlaybook?.defaultRunConfig ?? {})
 
   return (
     <div className="space-y-5">
@@ -85,9 +96,41 @@ export default function GraphRuntimeWorkspace({
             </div>
           </div>
           {selectedPlaybook ? (
-            <div className="mt-4 rounded-md border border-slate-700/80 bg-console-950 px-3 py-2 text-sm text-slate-300">
-              <span className="text-slate-500">{t('graph.builder.playbook')}</span>{' '}
-              {selectedPlaybook.description}
+            <div className="mt-4 border-t border-slate-700/80 pt-4 text-sm text-slate-300">
+              <p>
+                <span className="text-slate-500">{t('graph.builder.playbook')}</span>{' '}
+                {selectedPlaybook.description}
+              </p>
+              <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.65fr)]">
+                <div>
+                  <p className="mb-2 text-xs font-medium uppercase text-slate-500">
+                    {t('graph.builder.evidence')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedPlaybook.evidence.map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-md border border-slate-700/80 bg-slate-900/70 px-2 py-1 text-xs text-slate-300"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs font-medium uppercase text-slate-500">
+                    {t('graph.builder.defaultRunConfig')}
+                  </p>
+                  <dl className="grid gap-x-3 gap-y-2 text-xs sm:grid-cols-[110px_minmax(0,1fr)]">
+                    {defaultRunConfigEntries.slice(0, 6).map(([key, value]) => (
+                      <div key={key} className="contents">
+                        <dt className="truncate text-slate-500">{key}</dt>
+                        <dd className="min-w-0 truncate text-slate-300">{formatConfigValue(value)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              </div>
             </div>
           ) : null}
         </div>

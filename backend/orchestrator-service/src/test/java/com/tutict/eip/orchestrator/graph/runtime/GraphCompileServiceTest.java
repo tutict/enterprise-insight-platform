@@ -24,6 +24,14 @@ class GraphCompileServiceTest {
     }
 
     @Test
+    void acceptsDiscoveryPlaybookWithBoundedEvidenceGapLoop() {
+        GraphCompileResult result = service.compile(DefaultGraphDefinitions.industryBusinessDiscovery(2));
+
+        assertThat(result.isValid()).isTrue();
+        assertThat(result.getErrors()).isEmpty();
+    }
+
+    @Test
     void rejectsUnboundedCycle() {
         GraphDefinition graph = graph(
                 List.of(

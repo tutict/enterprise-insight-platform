@@ -71,7 +71,9 @@
       "generatingPrompt": "Generating...",
       "runGraph": "Run playbook",
       "playbook": "Playbook:",
-      "loadPlaybook": "Load"
+      "loadPlaybook": "Load",
+      "evidence": "Evidence checklist",
+      "defaultRunConfig": "Run defaults"
     },
     "prompt": {
       "title": "Generated Prompt",

@@ -71,7 +71,9 @@
       "generatingPrompt": "生成中...",
       "runGraph": "运行 Playbook",
       "playbook": "Playbook：",
-      "loadPlaybook": "加载"
+      "loadPlaybook": "加载",
+      "evidence": "证据清单",
+      "defaultRunConfig": "运行默认值"
     },
     "prompt": {
       "title": "生成的 Prompt",

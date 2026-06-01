@@ -81,12 +81,25 @@ class GraphApiContractTest {
     }
 
     @Test
-    void playbookEndpointReturnsDefaultDeliveryPlaybook() throws Exception {
+    void playbookEndpointReturnsBuiltInPlaybooks() throws Exception {
         mockMvc.perform(get("/api/graph/playbooks"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].id").value("compile-generate-verify-repair"))
-                .andExpect(jsonPath("$.data[0].graph.metadata.playbookId").value("compile-generate-verify-repair"));
+                .andExpect(jsonPath("$.data[0].graph.metadata.playbookId").value("compile-generate-verify-repair"))
+                .andExpect(jsonPath("$.data[1].id").value("industry-business-discovery"))
+                .andExpect(jsonPath("$.data[1].graph.metadata.phase").value("discovery"))
+                .andExpect(jsonPath("$.data[1].evidence[0]").value("source inventory"));
+    }
+
+    @Test
+    void playbookEndpointReturnsDiscoveryPlaybookById() throws Exception {
+        mockMvc.perform(get("/api/graph/playbooks/industry-business-discovery"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value("industry-business-discovery"))
+                .andExpect(jsonPath("$.data.graph.nodes[1].label").value("collect sources"))
+                .andExpect(jsonPath("$.data.defaultRunConfig.evidenceRule").exists());
     }
 
     private Map<String, Object> validGraph() {

@@ -39,6 +39,31 @@ class GraphExecutorTest {
         assertThat(streamService.events.getLast().getType()).isEqualTo("GRAPH_RUN_COMPLETED");
     }
 
+    @Test
+    void executesDiscoveryPlaybookAndVerifiesEvidence() {
+        CapturingGraphEventStreamService streamService = new CapturingGraphEventStreamService();
+        GraphExecutor executor = new GraphExecutor(streamService);
+        GraphDefinition graph = DefaultGraphDefinitions.industryBusinessDiscovery(2);
+
+        executor.execute("discovery-run-1", graph);
+
+        assertThat(streamService.events)
+                .extracting(GraphEvent::getType)
+                .containsSubsequence(
+                        "GRAPH_RUN_STARTED",
+                        "NODE_STARTED",
+                        "NODE_SUCCEEDED",
+                        "EDGE_TRAVERSED"
+                )
+                .doesNotContain("NODE_FAILED");
+        assertThat(streamService.events)
+                .anySatisfy(event -> {
+                    assertThat(event.getType()).isEqualTo("NODE_SUCCEEDED");
+                    assertThat(event.getNodeId()).isEqualTo("verify-evidence");
+                });
+        assertThat(streamService.events.getLast().getType()).isEqualTo("GRAPH_RUN_COMPLETED");
+    }
+
     private static final class CapturingGraphEventStreamService extends GraphEventStreamService {
         private final List<GraphEvent> events = new ArrayList<>();
 

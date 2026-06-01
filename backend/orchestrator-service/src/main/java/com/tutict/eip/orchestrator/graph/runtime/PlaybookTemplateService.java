@@ -11,9 +11,10 @@ import java.util.Optional;
 public class PlaybookTemplateService {
 
     public static final String DEFAULT_PLAYBOOK_ID = "compile-generate-verify-repair";
+    public static final String DISCOVERY_PLAYBOOK_ID = "industry-business-discovery";
 
     public List<PlaybookTemplate> list() {
-        return List.of(defaultDeliveryPlaybook());
+        return List.of(defaultDeliveryPlaybook(), discoveryPlaybook());
     }
 
     public Optional<PlaybookTemplate> find(String id) {
@@ -40,6 +41,44 @@ public class PlaybookTemplateService {
                 DefaultGraphDefinitions.compileGenerateVerifyRepair(maxIterations, requiredRepairIterations),
                 defaultRunConfig,
                 List.of("compiled DSL", "harness prompt", "runtime events", "generated files", "verification result")
+        );
+    }
+
+    public PlaybookTemplate discoveryPlaybook() {
+        return discoveryPlaybook(2);
+    }
+
+    public PlaybookTemplate discoveryPlaybook(int maxIterations) {
+        Map<String, Object> defaultRunConfig = new LinkedHashMap<>();
+        defaultRunConfig.put("phase", "discovery");
+        defaultRunConfig.put("industries", List.of("AI engineering delivery", "enterprise developer productivity"));
+        defaultRunConfig.put(
+                "sourceTypes",
+                List.of("industry report", "competitor docs", "open-source README", "existing project docs")
+        );
+        defaultRunConfig.put("evidenceRule", "Every material conclusion must cite a source or be marked as an assumption.");
+        defaultRunConfig.put("deliverables", List.of(
+                "industry-research.md",
+                "business-analysis.md",
+                "domain-model.md",
+                "delivery-backlog.md"
+        ));
+
+        return new PlaybookTemplate(
+                DISCOVERY_PLAYBOOK_ID,
+                "Industry And Business Discovery",
+                "Discovery playbook for collecting industry material, extracting business signals, "
+                        + "modeling the existing project, and producing an evidence-backed delivery backlog.",
+                DefaultGraphDefinitions.industryBusinessDiscovery(maxIterations),
+                defaultRunConfig,
+                List.of(
+                        "source inventory",
+                        "fact and assumption register",
+                        "business capability map",
+                        "domain model notes",
+                        "gap analysis",
+                        "prioritized delivery backlog"
+                )
         );
     }
 }

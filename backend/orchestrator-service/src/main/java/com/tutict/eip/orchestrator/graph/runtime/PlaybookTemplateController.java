@@ -24,7 +24,7 @@ public class PlaybookTemplateController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<PlaybookTemplate> get(@PathVariable String id) {
+    public ApiResponse<PlaybookTemplate> get(@PathVariable("id") String id) {
         return ApiResponse.ok(
                 "playbook loaded",
                 playbookTemplateService.find(id)

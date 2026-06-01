@@ -1,14 +1,12 @@
-# Enterprise Insight React Console / 企业洞察前端控制台
+# FDE 交付工作台前端
 
-## 简介 / Overview
+该目录是 Enterprise Insight Platform 的 React 前端。当前产品定位为 FDE 交付工作台，前端负责项目理解、Playbook、交付运行、运行证据和系统设置等交互。
 
-该前端工程是 Enterprise Insight Platform 的 React 控制台，负责 DSL 编辑、Graph Builder 可视化编排、运行态事件展示、历史运行记录和系统设置。前端只负责配置、请求和事件渲染，不承载 Graph 执行逻辑。
+前端只负责配置、请求、状态展示和事件渲染，不承载后端执行逻辑。
 
-This frontend project is the React console for Enterprise Insight Platform. It provides DSL editing, visual Graph Builder orchestration, runtime event rendering, run history, and settings. The frontend owns configuration, requests, and event rendering, but it does not execute graph logic.
+## 技术栈
 
-## 技术栈 / Tech Stack
-
-- React 18
+- React
 - TypeScript
 - Vite
 - React Router
@@ -17,39 +15,114 @@ This frontend project is the React console for Enterprise Insight Platform. It p
 - Tailwind CSS
 - Axios
 
-## 功能模块 / Feature Modules
+## 功能模块
 
-- `features/dsl`：DSL 编辑与 Prompt 生成入口 / DSL editing and prompt generation entry.
-- `features/graph`：Graph Builder、Config Panel、Graph Runtime 事件渲染 / Graph Builder, Config Panel, and graph runtime event rendering.
-- `features/run`：运行控制台、SSE runtime adapter、执行时间线 / run console, SSE runtime adapter, and execution timeline.
-- `features/history`：运行历史与详情 / run history and details.
-- `features/auth`：登录、JWT 存储与路由保护 / login, JWT storage, and route protection.
-- `shared`：布局、导航、状态、错误边界等通用组件 / shared layout, navigation, status, and error-boundary components.
+| 模块 | 说明 |
+| --- | --- |
+| `features/auth` | 登录、JWT 本地存储和路由保护。 |
+| `features/dsl` | DSL 输入和 Prompt 编译入口。 |
+| `features/graph` | Playbook 加载、Graph Builder、Graph Runtime 状态展示。 |
+| `features/project` | 项目理解看板、交付机会和可运行交付简报。 |
+| `features/run` | Delivery Run 表单、SSE 运行事件、执行时间线和结果展示。 |
+| `features/history` | Run Evidence 列表和运行详情。 |
+| `shared` | 布局、导航、错误边界、通知和通用组件。 |
 
-## 本地开发 / Local Development
+## 本地开发
 
-```bash
+```powershell
 npm install
 npm run dev -- --host 127.0.0.1
 ```
 
-默认情况下，Vite 会把 `/api` 和 `/actuator` 代理到 `http://localhost:8080`。
+默认访问：
 
-By default, Vite proxies `/api` and `/actuator` to `http://localhost:8080`.
-
-## 构建 / Build
-
-```bash
-npm run build
+```text
+http://127.0.0.1:5173
 ```
 
-Windows 沙箱环境可能阻止 Vite/esbuild 子进程，必要时请在普通终端或授权环境中执行。
+默认代理：
 
-Windows sandbox environments may block Vite/esbuild child processes. Run in a regular or approved shell if needed.
+```text
+/api      -> http://localhost:8080
+/actuator -> http://localhost:8080
+```
 
-## 运行约束 / Runtime Boundary
+## 构建与检查
 
-- UI 不能写后端执行逻辑 / The UI must not implement backend execution logic.
-- Graph 执行由 `orchestrator-service` 的 `GraphExecutor` 负责 / Graph execution is owned by `GraphExecutor` in `orchestrator-service`.
-- UI 通过 SSE 消费 `GraphEvent` 并更新状态 / The UI consumes `GraphEvent` through SSE and updates state.
-- Graph 定义通过 `/api/graph/compile` 校验，通过 `/api/graph/run` 启动 / Graph definitions are validated through `/api/graph/compile` and started through `/api/graph/run`.
+```powershell
+npm run build
+npm run lint
+```
+
+## 页面说明
+
+### Project Intel
+
+路径：
+
+```text
+/project
+```
+
+用途：
+
+- 调用 `/api/project-analysis/current` 获取当前项目清单。
+- 展示模块、API、前端路由、文档、测试和业务能力候选。
+- 调用 `/api/project-analysis/current/delivery-brief` 获取可运行交付简报。
+- 点击“装载到交付运行”后跳转到 `/run`，并带入 requirement、目标目录、验证命令和修复轮次。
+
+### Playbooks
+
+路径：
+
+```text
+/graph
+```
+
+用途：
+
+- 调用 `/api/graph/playbooks` 加载内置 Playbook。
+- 将 Playbook Graph 装载到 Graph Builder。
+- 支持编译 Graph、生成 Prompt、运行 Graph。
+
+### Delivery Run
+
+路径：
+
+```text
+/run
+```
+
+用途：
+
+- 编辑或接收交付 requirement。
+- 配置模型、目标目录、验证命令和修复轮次。
+- 调用 `/api/orchestrator/run/start` 启动运行。
+- 通过 `/api/orchestrator/run/stream/{runId}` 消费 SSE 事件。
+- 展示 compile、generate、verify、repair 状态。
+
+### Run Evidence
+
+路径：
+
+```text
+/runs
+```
+
+用途：
+
+- 调用 `/api/orchestrator/delivery-runs` 查询服务端持久化运行记录。
+- 查看单次运行的输入、事件、输出和状态。
+
+## 前端边界
+
+前端禁止实现：
+
+- Graph 后端执行。
+- 模型调用。
+- 文件写入。
+- 验证命令执行。
+- 自动修复。
+- DeliveryRun 持久化。
+
+这些能力由后端服务负责，前端通过 API 和 SSE 消费结果。

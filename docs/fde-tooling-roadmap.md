@@ -1,176 +1,179 @@
 # FDE 交付工作台路线图
 
-## 定位
+## 产品定位
 
-本项目正在从“AI 编排控制台”收束为 Forward Deployed Engineer（FDE）的交付工作台。
+FDE 交付工作台面向 Forward Deployed Engineer 的真实交付流程。它不是“AI 编排器”的通用演示，而是一个帮助工程师在客户现场完成发现、分析、实现、验证和交付复盘的工作台。
 
-核心目标是把客户需求、现场上下文、实施方案、Agent 执行、验证结果和交付证据串成一条可复现、可审计、可复用的工程链路。
-
-它不应该只是聊天界面或代码生成界面，而是 FDE 在客户现场做方案落地时的控制面板。
+核心判断是：AI 只有理解行业资料、客户业务、现有系统和代码证据，才可能精准落在最急需的业务能力上。因此工具链必须先建立项目理解，再驱动交付运行。
 
 ## 目标用户
 
-- FDE / 解决方案工程师：把客户需求快速转成可运行原型、集成方案或修复补丁。
-- 平台工程师：维护可复用的交付 Playbook、验证命令、模型路由和安全策略。
-- 交付负责人：查看每次交付运行的输入、输出、验证状态、失败原因和修复记录。
+- FDE / 解决方案工程师：把客户需求、行业约束和现有系统快速转成可验证的实现切片。
+- 平台工程师：维护 Playbook、验证命令、模型路由、安全策略和运行证据存储。
+- 交付负责人：查看每次交付运行的输入、输出、失败原因、修复记录和验证结果。
+- 企业技术负责人：评估 AI 交付是否可复现、可审计、可治理。
 
-## 核心工作流
+## 端到端流程
 
 ```text
-客户需求 / 现场上下文
-  -> 需求结构化
-  -> 交付 Playbook 编排
-  -> DSL / Harness Prompt 编译
-  -> Agent 执行
-  -> 文件生成
-  -> 验证命令
-  -> 自动修复
-  -> 交付证据与复盘
+行业资料收集
+  -> 客户业务分析
+  -> 现有项目代码扫描
+  -> 业务能力候选识别
+  -> 交付机会排序
+  -> 生成交付简报
+  -> 装载 Playbook
+  -> 启动 DeliveryRun
+  -> 生成 / 修改代码
+  -> 验证 / 修复
+  -> 沉淀交付证据
 ```
 
-## 当前已落地
+## 当前能力状态
 
-| 能力 | 实现位置 | 说明 |
+| 能力 | 状态 | 说明 |
 | --- | --- | --- |
-| FDE 产品文案 | React 控制台 i18n | 前端品牌、导航和运行页已收束为 FDE Delivery Workbench、Delivery Run、Run Evidence。 |
-| 默认交付 Playbook | `orchestrator-service` 的 `PlaybookTemplateService` | 已将 `compile -> generate -> verify -> repair` 包装为 `compile-generate-verify-repair` 模板。 |
-| Playbook 查询接口 | `GET /api/graph/playbooks` | 前端 Playbooks 页面可加载默认模板并写入 Graph Builder。 |
-| 交付运行持久化 | `DeliveryRunStore` | 运行请求、事件流、最终响应和状态会写入 `runtime-logs/delivery-runs/*.json`。 |
-| 交付证据查询接口 | `GET /api/orchestrator/delivery-runs` | Run Evidence 页面从服务端读取运行记录，不再依赖浏览器 localStorage 保存运行历史。 |
-| 契约测试 | `DeliveryRunStoreTest`、`GraphApiContractTest` | 覆盖交付运行持久化和默认 Playbook API。 |
+| FDE 产品收束 | 已完成第一阶段 | 前端导航和文案已从 AI Orchestrator 收束为 FDE Delivery Workbench。 |
+| 默认交付 Playbook | 已完成第一阶段 | `compile-generate-verify-repair` 已内置为默认交付模板。 |
+| 行业与业务发现 Playbook | 已完成第一阶段 | `industry-business-discovery` 已内置，用于发现、分析、建模和交付 backlog。 |
+| DeliveryRun 服务端持久化 | 已完成第一阶段 | 请求、事件、响应和状态写入 `runtime-logs/delivery-runs/*.json`。 |
+| Run Evidence 页面 | 已完成第一阶段 | 前端从服务端读取运行记录，不再依赖浏览器 localStorage。 |
+| 项目理解扫描 | 已完成第一阶段 | 后端扫描模块、API、前端路由、文档、测试和能力候选。 |
+| 交付简报 | 已完成第一阶段 | 项目扫描结果可生成 run-ready requirement，并一键装载到 Delivery Run。 |
+| 客户工作区 | 未开始 | 需要将客户、仓库、项目扫描、运行记录和证据包挂到 Workspace 下。 |
+| 证据包导出 | 未开始 | 需要支持 Markdown/JSON 导出。 |
 
-## 当前能力映射
+## 项目理解能力
 
-| FDE 能力 | 当前模块 | 评价 |
-| --- | --- | --- |
-| 需求结构化 | `harness-compiler` | 已有规则型 DSL 解析，后续需要扩展客户上下文、约束和验收标准。 |
-| 方案编排 | `Graph Builder` / `GraphExecutor` | 已有可视化图与后端运行时，适合沉淀交付 Playbook。 |
-| Agent 执行 | `agent-adapter` | 已有 Ollama 适配、文件写入、验证与修复循环，后续需要扩展多 Provider。 |
-| 运行可观测 | SSE 事件流 / 时间线 | 已有事件流，后续应补节点耗时、日志摘要和产物 diff。 |
-| 安全边界 | Gateway / verify allowlist / output-root | 方向正确，后续需要租户级策略与审计记录。 |
-| 交付资产 | `DeliveryRun` JSON 记录 | 已从前端 localStorage 下沉到服务端文件持久化，后续可替换为数据库。 |
+项目理解是 FDE 工作台区别于普通代码生成器的关键能力。
 
-## 产品主线
+当前扫描器会读取配置中的项目根目录，默认通过 `EIP_PROJECT_ANALYSIS_ROOT` 或当前工作目录向上查找仓库根目录。扫描内容包括：
 
-### 1. 客户工作区
+- Java Controller 映射，用于识别后端 API 行为。
+- React 路由，用于识别用户侧工作流入口。
+- Markdown 文档，用于识别已有业务、架构、需求和设计材料。
+- 测试文件，用于判断当前验证覆盖情况。
+- 模块边界，例如 Maven 模块、前端包、文档目录。
 
-面向客户或项目建立工作区，保存：
+扫描结果会被聚合为：
 
-- 客户背景、系统栈、代码仓库、环境约束。
-- 常用集成目标，例如 SSO、数据同步、API 网关、报表、权限模型。
-- 验收标准、测试命令、部署约束。
-- 交付运行历史和最终产物。
+- `ProjectInventory`：项目清单。
+- `BusinessCapability`：业务能力候选。
+- `DeliveryOpportunity`：交付机会。
+- `ProjectDeliveryBrief`：可直接装载到 Delivery Run 的交付简报。
 
-### 2. 交付 Playbook
+## 交付简报设计
 
-把 Graph 从“临时流程图”升级为可复用 Playbook：
+交付简报是“项目理解”和“AI 执行”之间的桥。它不是简单摘要，而是可运行输入。
 
-- discovery：澄清需求和缺失信息。
-- plan：生成实施方案与风险点。
-- implement：生成或修改项目文件。
-- verify：运行测试、构建、安全检查。
-- repair：基于失败输出自动修复。
-- handoff：生成交付说明、变更摘要、后续事项。
+交付简报包含：
 
-### 3. 证据化运行
+- 交付目标。
+- 优先级和机会点。
+- 项目结构统计。
+- 业务能力候选。
+- API、路由、文档、测试等代码证据。
+- 建议使用的 Playbook。
+- 默认目标目录。
+- 默认验证命令。
+- 修复轮次。
+- 可传给运行器的 options 元数据。
 
-每次运行都要留下证据：
+前端 Project Intel 页面点击“装载到交付运行”后，会把简报写入运行页输入区，并带入 `targetDirectory`、`verifyCommand` 和 `maxRepairRounds`。
 
-- 输入需求、编译后的 DSL、最终 Prompt。
-- 模型、参数、验证命令、工作目录。
-- 事件流、节点耗时、失败原因、修复轮次。
-- 生成文件列表、diff、验证日志。
-- 最终状态：已接受、待人工审阅、失败。
+## Playbook 主线
 
-### 4. Provider 与策略层
+### 1. `compile-generate-verify-repair`
 
-FDE 工具必须能适配客户环境：
+默认交付闭环：
 
-- Provider：Ollama、OpenAI-compatible API、企业内部模型网关。
-- Policy：允许写入路径、允许执行命令、最大修复轮次、敏感信息过滤。
-- Routing：按客户、任务类型、成本、延迟和安全要求选择模型。
+```text
+compile -> generate -> verify -> repair
+```
+
+适用于明确需求已经形成、需要生成或修改工程文件并验证结果的场景。
+
+### 2. `industry-business-discovery`
+
+发现与分析闭环：
+
+```text
+collect -> analyze -> model -> recommend
+```
+
+适用于前期调研，需要收集行业资料、分析现有业务、抽取领域模型、形成交付 backlog 的场景。
+
+### 3. 后续 Playbook 候选
+
+- API 集成原型：从外部接口文档生成集成服务和验证用例。
+- 遗留系统现代化评估：扫描旧系统模块，输出分阶段改造建议。
+- 缺陷复现与修复：从错误日志、测试失败和代码证据生成最小修复切片。
+- 数据同步与报表：围绕数据模型、同步任务和校验规则生成交付计划。
 
 ## 里程碑
 
-### Milestone 1：交付工作台壳
+### Milestone 1：FDE 工作台壳层
 
-状态：已部分完成。
-
-- 已将产品文案从 “AI Orchestrator” 收束为 “FDE Delivery Workbench”。
-- 已新增 Playbooks、Delivery Run、Run Evidence 这组前端概念。
-- Run Evidence 已从服务端读取交付运行记录。
-- 仍需补一个真正的客户工作区入口。
+状态：已完成第一阶段。
 
 验收标准：
 
-- 新用户能在 5 分钟内理解这个项目服务于 FDE 交付。
-- 默认页面能直接进入一个可运行的交付样例。
+- 新用户能在 5 分钟内理解这是 FDE 交付工具，而不是通用聊天工具。
+- 默认页面能进入一个可运行交付流程。
+- Playbooks、Delivery Run、Run Evidence、Project Intel 的导航语义清晰。
 
-### Milestone 2：服务端持久化运行记录
+### Milestone 2：DeliveryRun 持久化
 
-状态：第一阶段已完成。
-
-- 已持久化运行请求、运行事件、最终响应和运行状态。
-- 已提供列表和详情接口。
-- 已让前端 Run Evidence 页面从服务端查询。
-- 后续需要补 generated file manifest、verification log 的独立索引，并迁移到 H2/PostgreSQL。
+状态：已完成第一阶段。
 
 验收标准：
 
 - 刷新浏览器后运行历史不丢失。
-- 能从一次运行还原输入、流程、输出和验证结果。
+- 可从一次运行还原输入、事件、输出和验证结果。
+- 运行终态可用于审计和复盘。
 
-### Milestone 3：Playbook 模板
+### Milestone 3：项目理解与交付简报
 
-状态：第一阶段已完成。
-
-- 已内置默认模板 `compile-generate-verify-repair`。
-- 已支持前端从模板加载 Graph。
-- 后续应继续补 3 个 FDE 场景模板：
-  - API 集成原型。
-  - 旧系统现代化评估。
-  - 缺陷复现与修复。
+状态：已完成第一阶段。
 
 验收标准：
 
-- 用户不写 DSL 也能启动一条标准交付链路。
-- 模板 Graph 能编译、执行并产生可解释事件流。
+- 后端可扫描现有仓库并返回项目清单。
+- 项目清单能识别 API、路由、文档、测试和业务能力候选。
+- 系统能生成带证据的交付简报。
+- 前端可一键把交付简报装载到 Delivery Run。
 
-### Milestone 4：交付证据包
+### Milestone 4：工作区与证据包
 
 状态：未开始。
 
-- 增加 run export：Markdown / JSON。
-- 输出变更摘要、生成文件、验证结果、失败与修复记录。
-- 支持作为客户交付说明或内部复盘材料。
+验收标准：
+
+- 每个客户或项目有独立 Workspace。
+- DeliveryRun 挂到 Workspace 下。
+- 每次成功运行可导出 Markdown/JSON 交付报告。
+- 报告包含需求、Prompt、生成文件、验证命令、验证结果、失败与修复记录。
+
+### Milestone 5：数据库化与多租户治理
+
+状态：未开始。
 
 验收标准：
 
-- 每次成功运行能导出一份完整交付报告。
-- 报告可被人审阅，不依赖前端页面。
+- DeliveryRun 从 JSON 文件迁移到 H2/PostgreSQL。
+- 验证命令、模型 Provider、输出目录和敏感信息策略支持租户级配置。
+- 运行证据可按 Workspace、Playbook、状态和时间检索。
 
-## 技术优先级
+## 优先级建议
 
-1. 先稳定领域模型：`Workspace`、`Playbook`、`DeliveryRun`、`RunArtifact`、`VerificationLog`。
-2. 再升级持久化：从当前 JSON 文件持久化迁移到 H2/PostgreSQL 兼容实现。
-3. 再重组前端信息架构：导航和页面围绕 FDE 交付对象，而不是底层技术模块。
-4. 最后扩展模型 Provider：不要在领域模型未稳定时过早扩展太多模型接入。
-
-## 建议命名
-
-当前仓库名 `Enterprise Insight Platform` 可以保留，但产品副标题建议使用：
-
-> FDE 交付工作台：面向 AI 辅助方案落地的可审计工程控制台。
-
-如果后续单独产品化，可考虑：
-
-- FDE Delivery Workbench
-- FieldOps AI Workbench
-- Delivery Harness Console
-- Solution Engineering Control Plane
+1. 先稳定领域模型：`Workspace`、`ProjectInventory`、`ProjectDeliveryBrief`、`Playbook`、`DeliveryRun`、`RunArtifact`、`VerificationLog`。
+2. 再增强项目理解：补充 package/import 依赖图、数据库迁移文件、配置文件、测试覆盖率和最近变更分析。
+3. 再做证据包导出：从当前 DeliveryRun 记录生成 Markdown 和 JSON。
+4. 再做数据库持久化：用 repository 抽象替换文件读写。
+5. 最后扩展 Provider 和策略层，避免领域模型未稳定时过早接入太多模型能力。
 
 ## 最近三步
 
-1. 增加客户工作区模型，把 `DeliveryRun` 挂到 workspace 下。
-2. 为每次运行生成 Markdown 交付报告，包含需求、Prompt、生成文件、验证结果和修复记录。
-3. 把当前 JSON 文件持久化抽象成 repository 接口，为数据库实现做准备。
+1. 把项目扫描结果接入 Discovery Playbook 的运行上下文，让发现流程直接使用代码证据。
+2. 增加 Markdown 交付证据包导出，覆盖简报、运行请求、事件、最终响应和验证结果。
+3. 增加 Workspace 模型，把项目扫描、DeliveryRun 和导出报告统一挂载到客户或项目空间下。

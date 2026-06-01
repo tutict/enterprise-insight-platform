@@ -1,116 +1,115 @@
-# Enterprise Insight Platform / 企业洞察平台
+# Enterprise Insight Platform
 
-## 项目简介 / Project Introduction
+Enterprise Insight Platform 当前定位为 **FDE 交付工作台**。它面向 Forward Deployed Engineer 在客户现场或企业内部落地 AI 工程交付的场景，把行业资料、业务分析、现有项目代码理解、交付 Playbook、Agent 执行、验证修复和交付证据串成一条可审计、可复现的工程链路。
 
-将 AI Workflow Builder 与 Agent 执行能力引入 Enterprise Insight Platform，并围绕需求编译、可视化编排、图运行时与自动修复链路重新完善工程基线，补齐前端控制台、后端编译与编排服务、SSE 事件流、测试体系、压测脚本、安全策略与运维文档，提升项目完整性、可观测性与交付能力。项目基于 Spring Boot、React、React Flow、Zustand、k6、Ollama、Qdrant 与 Docker Compose 实现，支持 DSL 到 Prompt 编译、Graph Builder 可视化编排、条件分支与循环执行、运行时事件推送、容器化部署与生产环境扩展。
+这个项目不是普通聊天应用，也不是单次代码生成器。它的目标是让 AI 能够先理解业务和既有系统，再把工作落到最急需的业务能力上，并把每一次交付运行沉淀为服务端记录。
 
-Enterprise Insight Platform brings AI Workflow Builder and Agent execution capabilities into a deployable engineering baseline. It covers requirement compilation, visual graph orchestration, graph runtime execution, and auto-repair workflows, while completing the frontend console, backend compiler/orchestrator services, SSE event streaming, tests, load scripts, security controls, and operation documentation. The platform is built with Spring Boot, React, React Flow, Zustand, k6, Ollama, Qdrant, and Docker Compose. It supports DSL-to-prompt compilation, visual graph building, conditional branches, bounded loops, runtime event streaming, containerized deployment, and production-oriented extension.
+## 核心目标
 
-## 项目定位 / Positioning
+- 用结构化 DSL 和 Playbook 把模糊需求变成可执行交付流程。
+- 用项目扫描能力理解现有仓库中的模块、API、前端路由、文档和测试。
+- 用交付简报把代码证据转成可直接运行的 FDE 输入。
+- 用 `compile -> generate -> verify -> repair` 闭环提升生成结果的可控性。
+- 用 `DeliveryRun` 服务端持久化保存输入、事件、输出、验证结果和状态。
+- 用 Run Evidence 页面支持复盘、审计和复现。
 
-本项目不是普通聊天应用，而是面向 AI 辅助交付的工程控制台。系统将自然语言需求转换为结构化 DSL 和 Harness Prompt，通过 Agent Adapter 生成项目文件，并使用验证命令与自动修复循环提高生成结果的可控性。
-
-This project is not a generic chat application. It is an engineering control plane for AI-assisted delivery. It transforms natural-language requirements into structured DSL and Harness Prompts, generates project files through an Agent Adapter, and improves controllability through verification commands and auto-repair loops.
-
-当前产品方向已进一步收束为 **FDE 交付工作台**：面向 Forward Deployed Engineer 的客户现场交付场景，把需求结构化、交付 Playbook、Agent 执行、验证、修复和运行证据串成一条可审计链路。
-
-当前已落地：
-
-- 前端品牌与导航已调整为 FDE Delivery Workbench、Delivery Run、Run Evidence。
-- 默认 `compile -> generate -> verify -> repair` 图已包装为第一个交付 Playbook：`compile-generate-verify-repair`。
-- 交付运行记录已从浏览器 localStorage 下沉到服务端 `DeliveryRun` 持久化。
-- 编排服务会把运行请求、SSE 事件、最终响应和状态写入 `runtime-logs/delivery-runs/*.json`。
-- Run Evidence 页面通过 `/api/orchestrator/delivery-runs` 查询可复现的交付证据。
-- Playbooks 页面通过 `/api/graph/playbooks` 加载可复用 Playbook 模板。
-
-核心链路 / Core flow:
+## FDE 工作流程
 
 ```text
-Requirement / 需求
-  -> DSL Compiler / DSL 编译
-  -> Prompt Compiler / Prompt 编译
-  -> Orchestrator / 编排服务
-  -> Agent Adapter / Agent 适配器
-  -> Generated Project / 生成项目
-  -> Verification and Repair / 验证与修复
+行业资料与客户上下文
+  -> 业务能力分析
+  -> 现有项目代码扫描
+  -> 项目理解与交付机会识别
+  -> 生成可运行交付简报
+  -> 装载到 Delivery Run
+  -> 编译 DSL / 生成 Harness Prompt
+  -> Agent 生成或修改项目文件
+  -> 执行验证命令
+  -> 自动修复
+  -> 持久化 DeliveryRun 证据
 ```
 
-## 架构图 / Architecture
+## 当前已落地能力
+
+| 能力 | 说明 |
+| --- | --- |
+| FDE 品牌与信息架构 | 前端已收束为 FDE Delivery Workbench、Delivery Run、Run Evidence、Project Intel、Playbooks。 |
+| 项目理解 | `ProjectScannerService` 可以扫描当前仓库，识别模块、API、前端路由、Markdown 文档、测试和业务能力候选。 |
+| 交付简报 | `GET /api/project-analysis/current/delivery-brief` 会基于代码证据生成可直接装载到运行页的 requirement。 |
+| Playbook 模板 | 已内置 `compile-generate-verify-repair` 和 `industry-business-discovery` 两个 Playbook。 |
+| 交付运行 | `/api/orchestrator/run/start` 启动异步运行，SSE 推送运行事件。 |
+| 运行证据 | `DeliveryRunStore` 将运行请求、事件、最终响应和状态写入 `runtime-logs/delivery-runs/*.json`。 |
+| 前端装载 | Project Intel 页面可以一键把交付简报装载到 Delivery Run 页面。 |
+| 验证与修复 | Agent Adapter 支持文件写入、验证命令执行和自动修复轮次。 |
+
+## 架构总览
 
 ```text
-React Console / 前端控制台
-  |-- DSL Editor / DSL 编辑器
-  |-- Graph Builder / 可视化图编排
-  |-- Run Console / 运行控制台
+React FDE Workbench
+  |-- Project Intel：项目扫描、能力候选、交付机会、交付简报
+  |-- Playbooks：可复用交付流程模板
+  |-- Delivery Run：运行 compile/generate/verify/repair 闭环
+  |-- Run Evidence：查看服务端持久化运行记录
   |
-  v
-Gateway Service :8080 / 网关服务
-  |-- JWT Auth / JWT 鉴权
-  |-- Role Routing / 角色路由
+Gateway Service :8080
+  |-- JWT 鉴权
+  |-- API 路由
   |
-  +--> Auth Service / 认证服务
-  +--> Metadata Service / 元数据服务
-  +--> Harness Compiler / 编译服务
-  |      |-- RuleBasedDslParser
-  |      |-- GraphToDslCompiler
-  |      |-- PromptCompiler
-  |      '-- Prompt Injection Guard / Prompt 注入防护
+  +--> Harness Compiler
+  |      |-- Requirement -> DSL
+  |      |-- Graph -> DSL
+  |      '-- DSL -> Harness Prompt
   |
-  +--> Orchestrator Service :8091 / 编排服务
-  |      |-- Pipeline Runtime / 流水线运行时
-  |      |-- Graph Compile API / 图编译接口
-  |      |-- GraphExecutor / 图执行器
-  |      |-- SSE GraphEvent Stream / SSE 事件流
-  |      '-- Experiment Assignment / AB 实验分配
+  +--> Orchestrator Service
+  |      |-- ProjectScannerService
+  |      |-- ProjectAnalysisController
+  |      |-- PlaybookTemplateService
+  |      |-- RunExecutionEngine
+  |      |-- RunEventStreamService
+  |      '-- DeliveryRunStore
   |
-  '--> Agent Adapter / Agent 适配器
-         |-- Ollama Adapter / Ollama 适配
-         |-- File Writers / 文件写入器
-         |-- verifyCommand Allowlist / 验证命令白名单
-         '-- Auto Repair Loop / 自动修复循环
+  '--> Agent Adapter
+         |-- LLM Provider Adapter
+         |-- Project File Writer
+         |-- Verification Command Runner
+         '-- Auto Repair Loop
 ```
 
-## 核心能力 / Core Capabilities
+## 关键接口
 
-- Debug / 调试：Graph runtime 推送 `GRAPH_RUN_STARTED`、`NODE_STARTED`、`NODE_SUCCEEDED`、`NODE_FAILED`、`EDGE_TRAVERSED`、`GRAPH_RUN_COMPLETED` 和 `GRAPH_RUN_FAILED` 事件，前端只消费事件并渲染状态，不承载执行逻辑。
-- Profiling / 性能分析：k6 脚本输出 latency、RPS 和 error rate；运行事件可进一步扩展为节点级耗时分析。
-- AB Test / 实验能力：`ExperimentAssignmentService` 基于 `experimentKey` 与 `subjectKey` 做确定性加权分配，可用于 Prompt 模板、模型路由或修复策略实验。
-- Security / 安全：Gateway 统一鉴权，Prompt 输入做隔离与清洗，`verifyCommand` 使用白名单，生成文件只能写入受控目录。
+| 接口 | 用途 |
+| --- | --- |
+| `POST /api/auth/login` | 登录并获取 JWT。 |
+| `POST /api/compiler/compile` | 将自然语言需求编译为 DSL 和 Prompt。 |
+| `POST /api/compiler/from-graph` | 将 Graph Definition 编译为 DSL 和 Prompt。 |
+| `GET /api/project-analysis/current` | 扫描当前项目并返回项目清单。 |
+| `GET /api/project-analysis/current/delivery-brief` | 基于项目清单生成可运行交付简报。 |
+| `GET /api/graph/playbooks` | 查询内置 Playbook 模板。 |
+| `POST /api/orchestrator/run/start` | 启动异步交付运行。 |
+| `GET /api/orchestrator/run/stream/{runId}` | 订阅交付运行 SSE 事件。 |
+| `GET /api/orchestrator/delivery-runs` | 查询服务端持久化的交付运行记录。 |
 
-- Debug: the graph runtime emits lifecycle events, and the frontend renders state from events without owning execution logic.
-- Profiling: k6 reports latency, RPS, and error rate; runtime events can be extended into node-level duration metrics.
-- AB Test: `ExperimentAssignmentService` provides deterministic weighted assignment for prompt templates, model routing, or repair policies.
-- Security: gateway authentication, prompt input isolation, verify command allowlists, and file-write sandboxing are implemented.
+更完整的接口说明见 [docs/api.md](docs/api.md)。
 
-## 服务与接口 / Services and APIs
+## 快速启动
 
-| 服务 / Service | 责任 / Responsibility | 核心接口 / Key APIs |
-| --- | --- | --- |
-| `gateway-service` | JWT 鉴权、角色校验、服务路由 / JWT auth, role checks, routing | `/api/**` |
-| `auth-service` | 登录与 Token 签发 / Login and token issuing | `POST /api/auth/login` |
-| `harness-compiler` | 需求或图编译为 DSL 与 Prompt / Compile requirements or graphs into DSL and prompts | `POST /api/compiler/compile`, `POST /api/compiler/from-graph` |
-| `orchestrator-service` | 编排执行、交付运行证据、Graph runtime、SSE 事件 / Orchestration, delivery run evidence, graph runtime, SSE events | `POST /api/orchestrator/run/start`, `GET /api/orchestrator/delivery-runs`, `GET /api/graph/playbooks`, `POST /api/graph/run` |
-| `agent-adapter` | LLM 调用、文件写入、验证与修复 / LLM calls, file writing, verification, repair | `POST /api/agent-adapter/**` |
-
-## 快速启动 / Quick Start
-
-环境要求 / Prerequisites:
+环境要求：
 
 - Java 21+
 - Maven 3.9+
 - Node.js 20+
 - npm
-- k6, for load testing / 用于压测
-- Ollama, optional for local LLM execution / 可选，用于本地模型执行
+- Docker Desktop 或 Docker Engine，按需启动中间件
+- Ollama，可选，用于本地模型执行
 
-后端测试 / Backend tests:
+后端测试：
 
 ```powershell
 cd backend
 mvn test
 ```
 
-前端启动 / Frontend dev server:
+前端开发服务：
 
 ```powershell
 cd enterprise-insight-backend-react
@@ -118,148 +117,50 @@ npm install
 npm run dev -- --host 127.0.0.1
 ```
 
-登录 / Login:
-
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin"}'
-```
-
-## 测试体系 / Test Strategy
-
-当前测试覆盖 / Current coverage:
-
-- Unit tests / 单元测试：compiler、orchestrator、agent-adapter、experiment assignment。
-- Integration tests / 集成测试：`PipelineIntegrationTest` 覆盖 requirement -> DSL -> Prompt -> Orchestrator -> Agent Adapter -> File Writer -> Verifier。
-- API contract tests / API 契约测试：compiler、orchestrator、graph runtime 接口响应结构。
-- Security tests / 安全测试：JWT 鉴权、Prompt injection 防护、verifyCommand 限制、文件写入路径限制。
-
-最新本地验证 / Latest local verification:
+默认访问地址：
 
 ```text
-mvn test                         PASS
-npm run build                    PASS
-k6 version                       PASS - k6.exe v1.7.1
+前端工作台        http://127.0.0.1:5173
+Gateway API       http://localhost:8080
+Orchestrator API  http://localhost:8091
 ```
 
-## 性能结果 / Performance Results
-
-k6 脚本 / k6 script:
+登录账号：
 
 ```text
-scripts/k6/graph-runtime-load.js
+用户名：admin
+密码：admin
 ```
 
-Gateway 模式 / Gateway mode:
+## 本地验证命令
 
 ```powershell
-$env:BASE_URL="http://localhost:8080"
-k6 run scripts/k6/graph-runtime-load.js
+cd backend
+mvn -q -pl orchestrator-service -am test
 ```
-
-直连 orchestrator 模式 / Direct orchestrator mode:
 
 ```powershell
-$env:BASE_URL="http://localhost:8091"
-$env:AUTH_MODE="none"
-$env:SKIP_COMPILER="true"
-$env:VUS="10"
-$env:RAMP_UP="30s"
-$env:STEADY="1m"
-$env:RAMP_DOWN="20s"
-k6 run scripts/k6/graph-runtime-load.js
+cd enterprise-insight-backend-react
+npm run build
+npm run lint
 ```
 
-本地基线结果 / Local baseline result:
+## 文档入口
 
-```text
-date                             2026-05-04
-scope                            graph runtime direct mode
-baseUrl                          http://localhost:8091
-authMode                         none
-skipCompiler                     true
-vus                              10
-rampUp                           30s
-steady                           1m
-rampDown                         20s
-requests                         1726
-rps                              15.66
-errorRate                        0
-latency.avgMs                    0.86
-latency.p95Ms                    1.90
-latency.p99Ms                    3.18
-thresholds                       PASS
-```
+- [FDE 交付工作台路线图](docs/fde-tooling-roadmap.md)
+- [架构说明](docs/architecture.zh-CN.md)
+- [接口文档](docs/api.md)
+- [开发指南](docs/development.md)
+- [安全测试说明](docs/security-testing.md)
 
-## 安全策略 / Security Policy
+## 后续重点
 
-- 受保护接口必须通过 Gateway JWT 鉴权 / Protected APIs require Gateway JWT authentication.
-- `ANALYST` 角色可访问 compiler、graph、orchestrator、agent、metadata 与 AI 路由 / The `ANALYST` role is required for compiler, graph, orchestrator, agent, metadata, and AI routes.
-- Prompt 输入被视为不可信数据，并进行注入语义清洗 / Prompt inputs are treated as untrusted data and sanitized.
-- `verifyCommand` 仅允许 Maven、Gradle、npm、pnpm、Yarn 等构建测试命令 / `verifyCommand` is allowlisted to build and test executables such as Maven, Gradle, npm, pnpm, and Yarn.
-- 生成文件路径必须保持在 `agent.ollama.output-root` 下 / Generated file paths must stay under `agent.ollama.output-root`.
+1. 将 `DeliveryRun` 从 JSON 文件持久化升级为 H2/PostgreSQL repository。
+2. 为每次运行导出 Markdown/JSON 交付证据包。
+3. 将项目扫描结果接入 Discovery Playbook 的运行上下文。
+4. 增加工作区模型，把客户、项目、仓库、运行记录和证据包挂到同一个 Workspace 下。
+5. 扩展更多 FDE Playbook，例如 API 集成原型、遗留系统现代化评估、缺陷复现与修复。
 
-详细说明见 / See also: [docs/security-testing.md](docs/security-testing.md).
+## License
 
-## Graph Runtime 约束 / Graph Runtime Contract
-
-- 必须且只能有一个 `start` 节点 / Exactly one `start` node is required.
-- 至少需要一个 `end` 节点 / At least one `end` node is required.
-- `condition` 节点必须有 success 与 failed/failure 分支 / Condition nodes must define success and failed/failure branches.
-- 移除带 `maxIterations` 的循环边后，图必须是 DAG / The graph must be a DAG after bounded loop edges are removed.
-- 循环边必须设置 `maxIterations` / Loop edges must define `maxIterations`.
-
-## 路线图 / Roadmap
-
-- FDE 交付工作台路线图见：[docs/fde-tooling-roadmap.md](docs/fde-tooling-roadmap.md)。
-- 交付运行与 Playbook 接口见：[docs/api.md](docs/api.md)。
-- 将当前 JSON 文件持久化迁移为 H2/PostgreSQL repository。
-- 增加节点级耗时指标与 profiling 导出 / Add node-level timing metrics and profiling export.
-- 将实验分配接入 orchestrator request metadata / Promote experiment assignment into orchestrator request metadata.
-- 增加 OpenAPI 生成与 schema diff contract checks / Add OpenAPI generation and schema-diff contract checks.
-- 发布 CI 性能基线 / Publish CI performance baselines.
-- 增强租户级 verifyCommand policy / Add tenant-level verifyCommand policy profiles.
-
-## Quick Start
-
-Prerequisites:
-
-- Docker Desktop or Docker Engine with Docker Compose
-- Java 21+
-- Maven 3.9+
-- Node.js 20+
-- npm
-
-```bash
-git clone <repo-url>
-cd enterprise-insight-platform
-./scripts/dev.sh
-```
-
-Windows PowerShell:
-
-```powershell
-.\scripts\dev.ps1
-```
-
-The dev script starts Docker base services, backend Spring Boot services, and the React Vite dev server. Default addresses:
-
-```text
-Frontend             http://127.0.0.1:5173
-Gateway API          http://localhost:8080
-Orchestrator API     http://localhost:8091
-Qdrant               http://localhost:6333
-Ollama               http://localhost:11434
-```
-
-Login with `admin` / `admin`. Runtime logs are written to `runtime-logs/`.
-
-Stop Docker services when finished:
-
-```bash
-docker compose -f backend/compose.yaml down
-```
-
-## License / License
 MIT

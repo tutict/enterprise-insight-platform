@@ -1,27 +1,26 @@
-# Architecture / 架构
+# 架构文档入口
 
-## 文档入口 / Document Index
+当前项目文档以中文为主。完整架构说明见：
 
-- English architecture details / 英文架构说明: [architecture.en.md](./architecture.en.md)
-- 中文架构说明 / Chinese architecture details: [architecture.zh-CN.md](./architecture.zh-CN.md)
+- [架构说明](./architecture.zh-CN.md)
 
-## 摘要 / Summary
+## 摘要
 
-系统采用编译器式 AI 工程架构：先将需求或可视化图转换为 DSL，再编译为 Harness Prompt，最后由 orchestrator 和 agent-adapter 执行生成、验证与修复。
-
-The system uses a compiler-style AI engineering architecture: it converts requirements or visual graphs into DSL, compiles them into Harness Prompts, and then lets the orchestrator and agent-adapter execute generation, verification, and repair.
+FDE 交付工作台采用“项目理解 + 编译器式 AI 工程 + 可审计运行记录”的架构：
 
 ```text
-Requirement / 需求
-  -> DSL / 中间表示
-  -> Prompt / 提示词
-  -> Runtime / 运行时
-  -> Agent / 生成与修复
+项目扫描
+  -> 交付简报
+  -> DSL / Prompt 编译
+  -> Playbook 运行
+  -> Agent 生成或修改
+  -> 验证与修复
+  -> DeliveryRun 证据沉淀
 ```
 
-## 核心原则 / Core Principles
+核心边界：
 
-- 分离“要构建什么”和“如何生成” / Separate what to build from how to generate.
-- UI 只负责配置和事件渲染，不负责执行逻辑 / The UI owns configuration and event rendering, not execution logic.
-- 后端运行时通过事件驱动暴露状态 / Backend runtimes expose state through events.
-- 安全边界在 Prompt、命令执行和文件写入处同时生效 / Security boundaries are enforced at prompt, command execution, and file writing layers.
+- 前端负责配置、展示和交互。
+- 后端负责项目扫描、编译、运行、事件流和持久化。
+- Agent Adapter 负责模型调用、文件写入、验证命令和修复循环。
+- Gateway 负责鉴权和路由保护。

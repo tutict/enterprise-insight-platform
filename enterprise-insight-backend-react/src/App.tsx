@@ -8,6 +8,7 @@ import RequireAuth from './shared/components/RequireAuth'
 const DslEditor = lazy(() => import('./pages/DslEditor'))
 const GraphRuntime = lazy(() => import('./pages/GraphRuntime'))
 const Login = lazy(() => import('./pages/Login'))
+const ProjectIntelligence = lazy(() => import('./pages/ProjectIntelligence'))
 const RunPage = lazy(() => import('./pages/RunPage'))
 const Runs = lazy(() => import('./pages/Runs'))
 const Settings = lazy(() => import('./pages/Settings'))
@@ -24,6 +25,7 @@ function App() {
               <Route path="/" element={<Navigate to="/run" replace />} />
               <Route path="/dsl" element={<DslEditor />} />
               <Route path="/graph" element={<GraphRuntime />} />
+              <Route path="/project" element={<ProjectIntelligence />} />
               <Route path="/run" element={<RunPage />} />
               <Route path="/runs" element={<Runs />} />
               <Route path="/settings" element={<Settings />} />

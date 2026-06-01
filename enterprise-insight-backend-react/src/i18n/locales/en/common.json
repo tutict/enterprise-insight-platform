@@ -29,6 +29,7 @@
   "nav": {
     "dsl": "Requirement DSL",
     "graph": "Playbooks",
+    "project": "Project Intel",
     "run": "Delivery Run",
     "runs": "Run Evidence",
     "settings": "Settings",
@@ -106,6 +107,60 @@
       "runFailed": "Graph run failed.",
       "playbookLoaded": "Loaded {{name}}.",
       "playbookLoadFailed": "Failed to load playbooks."
+    }
+  },
+  "project": {
+    "title": "Project Intelligence",
+    "description": "Deterministic scan of the existing codebase so FDE work can target the most urgent business capabilities.",
+    "rescan": "Rescan",
+    "scanning": "Scanning...",
+    "empty": "No project inventory loaded yet.",
+    "loaded": "Project inventory loaded.",
+    "loadFailed": "Project scan failed",
+    "metrics": {
+      "files": "scanned files",
+      "modules": "modules",
+      "apis": "API endpoints",
+      "capabilities": "capabilities"
+    },
+    "opportunities": {
+      "title": "Delivery Opportunities",
+      "description": "Priority candidates derived from code evidence, routes, APIs, and verification signals."
+    },
+    "brief": {
+      "title": "Run-ready Delivery Brief",
+      "description": "Evidence-backed requirement assembled from the current project scan.",
+      "loadRun": "Load into run",
+      "playbook": "Playbook",
+      "targetDirectory": "Target directory",
+      "verifyCommands": "Verify commands",
+      "evidence": "Evidence items",
+      "empty": "No delivery brief is available yet.",
+      "loadedIntoRun": "Delivery brief loaded into the run workspace."
+    },
+    "modules": {
+      "title": "Modules",
+      "description": "Detected project areas and their build/runtime markers."
+    },
+    "capabilities": {
+      "title": "Business Capabilities",
+      "description": "Capability candidates grouped from API paths, frontend routes, and documents."
+    },
+    "api": {
+      "title": "API Evidence",
+      "description": "Controller mappings that anchor backend business behavior."
+    },
+    "routes": {
+      "title": "Frontend Routes",
+      "description": "Client routes that reveal user-facing workflows."
+    },
+    "documents": {
+      "title": "Documents",
+      "description": "Markdown sources that can ground discovery assumptions."
+    },
+    "tests": {
+      "title": "Verification Signals",
+      "description": "Tests found in the current repository scan."
     }
   },
   "status": {

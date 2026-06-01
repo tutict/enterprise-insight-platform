@@ -19,3 +19,10 @@ delivery:
   runs:
     storage-root: ${EIP_DELIVERY_RUNS_DIR:../runtime-logs/delivery-runs}
     max-list-size: 100
+
+project:
+  analysis:
+    root: ${EIP_PROJECT_ANALYSIS_ROOT:}
+    max-depth: 8
+    max-files: 5000
+    max-evidence-per-category: 80

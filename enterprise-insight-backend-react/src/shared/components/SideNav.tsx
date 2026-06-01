@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 const navItems = [
   { labelKey: 'nav.dsl', path: '/dsl' },
   { labelKey: 'nav.graph', path: '/graph' },
+  { labelKey: 'nav.project', path: '/project' },
   { labelKey: 'nav.run', path: '/run' },
   { labelKey: 'nav.runs', path: '/runs' },
   { labelKey: 'nav.settings', path: '/settings' },

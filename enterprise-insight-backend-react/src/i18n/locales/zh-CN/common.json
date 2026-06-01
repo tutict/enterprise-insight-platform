@@ -29,6 +29,7 @@
   "nav": {
     "dsl": "需求 DSL",
     "graph": "Playbook",
+    "project": "项目理解",
     "run": "交付运行",
     "runs": "交付证据",
     "settings": "设置",
@@ -106,6 +107,60 @@
       "runFailed": "图运行失败。",
       "playbookLoaded": "已加载 {{name}}。",
       "playbookLoadFailed": "加载 Playbook 失败。"
+    }
+  },
+  "project": {
+    "title": "项目理解",
+    "description": "对现有代码库做确定性扫描，让 FDE 工作优先落到最急需的业务能力上。",
+    "rescan": "重新扫描",
+    "scanning": "扫描中...",
+    "empty": "尚未加载项目清单。",
+    "loaded": "项目清单已加载。",
+    "loadFailed": "项目扫描失败",
+    "metrics": {
+      "files": "扫描文件",
+      "modules": "模块",
+      "apis": "API 端点",
+      "capabilities": "业务能力"
+    },
+    "opportunities": {
+      "title": "交付机会",
+      "description": "基于代码证据、路由、API 和验证信号推导出的优先候选项。"
+    },
+    "brief": {
+      "title": "可运行交付简报",
+      "description": "基于当前项目扫描证据生成的运行输入。",
+      "loadRun": "装载到交付运行",
+      "playbook": "Playbook",
+      "targetDirectory": "目标目录",
+      "verifyCommands": "验证命令",
+      "evidence": "证据项",
+      "empty": "暂无可用交付简报。",
+      "loadedIntoRun": "交付简报已装载到运行工作台。"
+    },
+    "modules": {
+      "title": "模块",
+      "description": "识别到的项目区域及其构建/运行标记。"
+    },
+    "capabilities": {
+      "title": "业务能力",
+      "description": "从 API 路径、前端路由和文档聚合出的能力候选。"
+    },
+    "api": {
+      "title": "API 证据",
+      "description": "用于锚定后端业务行为的 Controller 映射。"
+    },
+    "routes": {
+      "title": "前端路由",
+      "description": "揭示用户侧工作流的客户端路由。"
+    },
+    "documents": {
+      "title": "文档",
+      "description": "可支撑发现阶段假设的 Markdown 来源。"
+    },
+    "tests": {
+      "title": "验证信号",
+      "description": "当前仓库扫描中发现的测试。"
     }
   },
   "status": {

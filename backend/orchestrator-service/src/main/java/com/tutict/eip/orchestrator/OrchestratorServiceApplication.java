@@ -2,6 +2,7 @@ package com.tutict.eip.orchestrator;
 
 import com.tutict.eip.agentadapter.config.OllamaProperties;
 import com.tutict.eip.orchestrator.delivery.DeliveryRunStoreProperties;
+import com.tutict.eip.orchestrator.project.ProjectAnalysisProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -14,7 +15,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         "com.tutict.eip.agentadapter.storage",
         "com.tutict.eip.agentadapter.verify"
 })
-@EnableConfigurationProperties({OllamaProperties.class, DeliveryRunStoreProperties.class})
+@EnableConfigurationProperties({OllamaProperties.class, DeliveryRunStoreProperties.class, ProjectAnalysisProperties.class})
 public class OrchestratorServiceApplication {
 
     public static void main(String[] args) {

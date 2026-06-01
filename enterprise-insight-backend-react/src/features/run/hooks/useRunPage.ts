@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router-dom'
 import { useNotificationStore } from '../../../store/uiStore'
 import { useDslStore } from '../../dsl/store/dslStore'
 import { useHistoryStore } from '../../history/store/historyStore'
@@ -8,12 +9,23 @@ import { isExecutionActive, useRunStore } from '../store/runStore'
 import { DEFAULT_VERIFY_COMMAND } from '../model/runConfig'
 import { useRunRuntime } from './useRunRuntime'
 
+type RunDraftLocationState = {
+  runDraft?: {
+    model?: string
+    targetDirectory?: string
+    verifyCommand?: string
+    maxRepairRounds?: number
+  }
+}
+
 export function useRunPage() {
   const { t } = useTranslation(['run', 'dsl'])
-  const [model, setModel] = useState('llama3.1')
-  const [targetDirectory, setTargetDirectory] = useState('generated-harness-app')
-  const [verifyCommand, setVerifyCommand] = useState(DEFAULT_VERIFY_COMMAND)
-  const [maxRepairRounds, setMaxRepairRounds] = useState(2)
+  const location = useLocation()
+  const runDraft = (location.state as RunDraftLocationState | null)?.runDraft
+  const [model, setModel] = useState(runDraft?.model ?? 'llama3.1')
+  const [targetDirectory, setTargetDirectory] = useState(runDraft?.targetDirectory ?? 'generated-harness-app')
+  const [verifyCommand, setVerifyCommand] = useState(runDraft?.verifyCommand ?? DEFAULT_VERIFY_COMMAND)
+  const [maxRepairRounds, setMaxRepairRounds] = useState(runDraft?.maxRepairRounds ?? 2)
 
   const dslText = useDslStore((state) => state.dslText)
   const setDslText = useDslStore((state) => state.setDslText)

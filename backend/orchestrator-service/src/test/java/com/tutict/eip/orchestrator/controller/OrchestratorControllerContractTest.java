@@ -75,6 +75,9 @@ class OrchestratorControllerContractTest {
                                 "verifyCommands", List.of(List.of("mvn", "test"))
                         ))))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").exists());
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.data.status").value(400))
+                .andExpect(jsonPath("$.data.code").value("BAD_REQUEST"));
     }
 }

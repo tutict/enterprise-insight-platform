@@ -1,14 +1,15 @@
 package com.tutict.eip.orchestrator.controller;
 
+import com.tutict.eip.common.ApiErrorResponse;
+import com.tutict.eip.common.ApiException;
+import com.tutict.eip.common.ApiResponse;
+import org.springframework.http.ProblemDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -16,18 +17,30 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<ProblemDetail>> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .orElse("Invalid request");
         log.warn("Validation failed message={}", message);
-        return ResponseEntity.badRequest().body(Map.of("error", message));
+        return ApiErrorResponse.badRequest(message);
+    }
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ApiResponse<ProblemDetail>> handleApiException(ApiException ex) {
+        log.warn("API request failed code={} status={} message={}", ex.getCode(), ex.getStatusCode(), ex.getBody().getDetail());
+        return ApiErrorResponse.from(ex);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleBadRequest(IllegalArgumentException ex) {
+    public ResponseEntity<ApiResponse<ProblemDetail>> handleBadRequest(IllegalArgumentException ex) {
         log.warn("Orchestration request failed message={}", ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
+        return ApiErrorResponse.badRequest(ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<ProblemDetail>> handleUnexpected(Exception ex) {
+        log.error("Unexpected orchestration error message={}", ex.getMessage(), ex);
+        return ApiErrorResponse.internalError();
     }
 }

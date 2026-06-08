@@ -2,6 +2,8 @@ package com.tutict.eip.common;
 
 public final class ErrorCodes {
     public static final String OK = "0";
+    public static final String BAD_REQUEST = "BAD_REQUEST";
+    public static final String VALIDATION_FAILED = "VALIDATION_FAILED";
     public static final String AUTH_REQUIRED = "AUTH_REQUIRED";
     public static final String FORBIDDEN = "FORBIDDEN";
     public static final String METADATA_UNAVAILABLE = "METADATA_UNAVAILABLE";

@@ -33,6 +33,10 @@ public class ApiResponse<T> {
         return new ApiResponse<>(code, false, message, null);
     }
 
+    public static <T> ApiResponse<T> error(String message, String code, T data) {
+        return new ApiResponse<>(code, false, message, data);
+    }
+
     public String getCode() {
         return code;
     }

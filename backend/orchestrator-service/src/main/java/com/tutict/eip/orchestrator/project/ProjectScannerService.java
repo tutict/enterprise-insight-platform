@@ -46,6 +46,18 @@ public class ProjectScannerService {
 
     public ProjectInventory scanCurrentProject() {
         Path root = resolveRoot();
+        return scanProject(root);
+    }
+
+    public ProjectInventory scanProject(String rootPath) {
+        Path root = Path.of(rootPath).toAbsolutePath().normalize();
+        if (!Files.isDirectory(root)) {
+            throw new IllegalArgumentException("Project analysis root is not a directory: " + root);
+        }
+        return scanProject(root);
+    }
+
+    private ProjectInventory scanProject(Path root) {
         List<Path> files = collectFiles(root);
         List<ProjectModule> modules = detectModules(root, files);
         List<ApiEndpointEvidence> apiEndpoints = scanApiEndpoints(root, files);
@@ -81,6 +93,14 @@ public class ProjectScannerService {
 
     public ProjectDeliveryBrief createDeliveryBrief() {
         ProjectInventory inventory = scanCurrentProject();
+        return createDeliveryBrief(inventory);
+    }
+
+    public ProjectDeliveryBrief createDeliveryBrief(String rootPath) {
+        return createDeliveryBrief(scanProject(rootPath));
+    }
+
+    private ProjectDeliveryBrief createDeliveryBrief(ProjectInventory inventory) {
         DeliveryOpportunity opportunity = inventory.deliveryOpportunities().stream()
                 .findFirst()
                 .orElseGet(() -> defaultOpportunity(inventory));

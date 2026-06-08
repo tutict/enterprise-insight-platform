@@ -1,6 +1,7 @@
 import type { Edge } from '@xyflow/react'
 import { useTranslation } from 'react-i18next'
 import type { OrchestratorRunResponse } from '../../../api/types/orchestrator.types'
+import type { Workspace } from '../../../api/types/workspace.types'
 import YamlEditor from '../../dsl/components/YamlEditor'
 import type { SavedDsl } from '../../history/store/historyTypes'
 import type { ExecutionPhase, RunConnectionState, RunStatus, StepKey, TimelineStep } from '../model/runEvent'
@@ -13,17 +14,20 @@ type RunWorkspaceProps = {
   dslText: string
   setDslText: (value: string) => void
   form: {
+    workspaceId: string
     model: string
     targetDirectory: string
     verifyCommand: string
     maxRepairRounds: number
   }
   setForm: {
+    setWorkspaceId: (value: string) => void
     setModel: (value: string) => void
     setTargetDirectory: (value: string) => void
     setVerifyCommand: (value: string) => void
     setMaxRepairRounds: (value: number) => void
   }
+  workspaces: Workspace[]
   savedDsls: SavedDsl[]
   selectDsl: (id: string) => void
   run: () => void
@@ -55,6 +59,7 @@ export default function RunWorkspace({
   setDslText,
   form,
   setForm,
+  workspaces,
   savedDsls,
   selectDsl,
   run,
@@ -124,7 +129,7 @@ export default function RunWorkspace({
             </div>
           </div>
 
-          <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <label className="space-y-2">
               <span className="text-xs font-medium text-slate-400">{t('run.savedDsl')}</span>
               <select className="field w-full" onChange={(event) => selectDsl(event.target.value)} defaultValue="">
@@ -136,6 +141,24 @@ export default function RunWorkspace({
                     {dsl.name}
                   </option>
                 ))}
+              </select>
+            </label>
+            <label className="space-y-2">
+              <span className="text-xs font-medium text-slate-400">Workspace</span>
+              <select
+                className="field w-full"
+                value={form.workspaceId}
+                onChange={(event) => setForm.setWorkspaceId(event.target.value)}
+              >
+                {workspaces.length ? (
+                  workspaces.map((workspace) => (
+                    <option key={workspace.workspaceId} value={workspace.workspaceId}>
+                      {workspace.customerName} / {workspace.projectName}
+                    </option>
+                  ))
+                ) : (
+                  <option value={form.workspaceId}>{form.workspaceId}</option>
+                )}
               </select>
             </label>
             <label className="space-y-2">

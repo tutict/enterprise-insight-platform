@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
+import { listWorkspaces } from '../../../api/modules/workspaces.api'
 import { useNotificationStore } from '../../../store/uiStore'
 import { useDslStore } from '../../dsl/store/dslStore'
 import { useHistoryStore } from '../../history/store/historyStore'
+import { useWorkspaceStore } from '../../workspace/store/workspaceStore'
 import type { StepKey } from '../model/runEvent'
 import { isExecutionActive, useRunStore } from '../store/runStore'
 import { DEFAULT_VERIFY_COMMAND } from '../model/runConfig'
@@ -12,6 +14,7 @@ import { useRunRuntime } from './useRunRuntime'
 type RunDraftLocationState = {
   runDraft?: {
     model?: string
+    workspaceId?: string
     targetDirectory?: string
     verifyCommand?: string
     maxRepairRounds?: number
@@ -22,6 +25,11 @@ export function useRunPage() {
   const { t } = useTranslation(['run', 'dsl'])
   const location = useLocation()
   const runDraft = (location.state as RunDraftLocationState | null)?.runDraft
+  const selectedWorkspaceId = useWorkspaceStore((state) => state.selectedWorkspaceId)
+  const setSelectedWorkspaceId = useWorkspaceStore((state) => state.setSelectedWorkspaceId)
+  const workspaces = useWorkspaceStore((state) => state.workspaces)
+  const setWorkspaces = useWorkspaceStore((state) => state.setWorkspaces)
+  const [workspaceId, setWorkspaceIdState] = useState(runDraft?.workspaceId ?? selectedWorkspaceId)
   const [model, setModel] = useState(runDraft?.model ?? 'llama3.1')
   const [targetDirectory, setTargetDirectory] = useState(runDraft?.targetDirectory ?? 'generated-harness-app')
   const [verifyCommand, setVerifyCommand] = useState(runDraft?.verifyCommand ?? DEFAULT_VERIFY_COMMAND)
@@ -39,14 +47,52 @@ export function useRunPage() {
   const selectSavedDsl = useHistoryStore((state) => state.selectSavedDsl)
   const pushNotification = useNotificationStore((state) => state.push)
 
+  const setWorkspaceId = useCallback((value: string) => {
+    setWorkspaceIdState(value)
+    setSelectedWorkspaceId(value)
+  }, [setSelectedWorkspaceId])
+
+  useEffect(() => {
+    if (workspaces.length) {
+      return
+    }
+
+    let cancelled = false
+    const loadWorkspaces = async () => {
+      try {
+        const loaded = await listWorkspaces()
+        if (!cancelled) {
+          setWorkspaces(loaded)
+          if (!loaded.some((workspace) => workspace.workspaceId === workspaceId) && loaded[0]) {
+            setWorkspaceId(loaded[0].workspaceId)
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          pushNotification({
+            id: crypto.randomUUID(),
+            type: 'error',
+            message: err instanceof Error ? err.message : t('run.failed'),
+          })
+        }
+      }
+    }
+
+    void loadWorkspaces()
+    return () => {
+      cancelled = true
+    }
+  }, [pushNotification, setWorkspaceId, setWorkspaces, t, workspaceId, workspaces.length])
+
   const runConfig = useMemo(
     () => ({
+      workspaceId,
       model,
       targetDirectory,
       verifyCommand,
       maxRepairRounds,
     }),
-    [maxRepairRounds, model, targetDirectory, verifyCommand],
+    [maxRepairRounds, model, targetDirectory, verifyCommand, workspaceId],
   )
   const runtime = useRunRuntime(runConfig)
 
@@ -130,17 +176,20 @@ export function useRunPage() {
     dslText,
     setDslText,
     form: {
+      workspaceId,
       model,
       targetDirectory,
       verifyCommand,
       maxRepairRounds,
     },
     setForm: {
+      setWorkspaceId,
       setModel,
       setTargetDirectory,
       setVerifyCommand,
       setMaxRepairRounds,
     },
+    workspaces,
     savedDsls,
     selectDsl,
     run: () => void run(),

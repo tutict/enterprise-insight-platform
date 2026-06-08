@@ -4,6 +4,7 @@ import com.tutict.eip.common.ApiResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -19,8 +20,11 @@ public class DeliveryRunController {
     }
 
     @GetMapping
-    public ApiResponse<List<DeliveryRunRecord>> list() {
-        return ApiResponse.ok("delivery runs loaded", deliveryRunStore.list());
+    public ApiResponse<List<DeliveryRunRecord>> list(@RequestParam(value = "workspaceId", required = false) String workspaceId) {
+        List<DeliveryRunRecord> runs = workspaceId == null || workspaceId.isBlank()
+                ? deliveryRunStore.list()
+                : deliveryRunStore.list(workspaceId);
+        return ApiResponse.ok("delivery runs loaded", runs);
     }
 
     @GetMapping("/{runId}")

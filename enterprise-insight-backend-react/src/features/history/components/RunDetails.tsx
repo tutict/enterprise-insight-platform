@@ -9,9 +9,10 @@ import type { RunRecord } from '../../run/model/runEvent'
 
 type RunDetailsProps = {
   run: RunRecord | null
+  exportEvidence: (id: string) => void
 }
 
-export default function RunDetails({ run }: RunDetailsProps) {
+export default function RunDetails({ run, exportEvidence }: RunDetailsProps) {
   const { t } = useTranslation(['run', 'dsl'])
   const workflow = useMemo(() => {
     if (!run) {
@@ -29,9 +30,14 @@ export default function RunDetails({ run }: RunDetailsProps) {
       {run ? (
         <>
           <div className="panel p-5">
-            <div className="mb-4">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
               <h2 className="text-sm font-semibold text-slate-100">{t('run.workflowGraph')}</h2>
               <p className="muted">{t('run.workflowPath')}</p>
+              </div>
+              <button className="btn-secondary" type="button" onClick={() => exportEvidence(run.id)}>
+                Export Evidence
+              </button>
             </div>
             <FlowCanvas nodes={workflow.nodes} edges={workflow.edges} />
           </div>

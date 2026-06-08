@@ -76,6 +76,7 @@ export type TimelineStep = StepState
 
 export type RunRecord = {
   id: string
+  workspaceId?: string
   dsl: string
   targetDirectory: string
   model: string

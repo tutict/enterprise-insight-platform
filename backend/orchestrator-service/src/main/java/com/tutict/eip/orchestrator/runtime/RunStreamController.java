@@ -3,6 +3,7 @@ package com.tutict.eip.orchestrator.runtime;
 import com.tutict.eip.common.ApiResponse;
 import com.tutict.eip.orchestrator.delivery.DeliveryRunStore;
 import com.tutict.eip.orchestrator.domain.OrchestratorRunRequest;
+import com.tutict.eip.orchestrator.workspace.WorkspaceRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.MediaType;
@@ -23,21 +24,29 @@ public class RunStreamController {
     private final RunEventStreamService streamService;
     private final RunExecutionEngine executionEngine;
     private final DeliveryRunStore deliveryRunStore;
+    private final WorkspaceRepository workspaceRepository;
 
     public RunStreamController(
             RunEventStreamService streamService,
             RunExecutionEngine executionEngine,
-            DeliveryRunStore deliveryRunStore
+            DeliveryRunStore deliveryRunStore,
+            WorkspaceRepository workspaceRepository
     ) {
         this.streamService = streamService;
         this.executionEngine = executionEngine;
         this.deliveryRunStore = deliveryRunStore;
+        this.workspaceRepository = workspaceRepository;
     }
 
     @PostMapping("/run/start")
     public ApiResponse<RunStartResponse> start(@Valid @RequestBody OrchestratorRunRequest request) {
         String runId = streamService.createRun(request.getRunId());
         request.setRunId(runId);
+        if (request.getWorkspaceId() == null || request.getWorkspaceId().isBlank()) {
+            request.setWorkspaceId(workspaceRepository.ensureDefaultWorkspace().getWorkspaceId());
+        } else if (workspaceRepository.find(request.getWorkspaceId()).isEmpty()) {
+            throw new IllegalArgumentException("Workspace not found: " + request.getWorkspaceId());
+        }
         deliveryRunStore.create(runId, request);
         executionEngine.executeAsync(runId, request);
         return ApiResponse.ok("run accepted", new RunStartResponse(runId));

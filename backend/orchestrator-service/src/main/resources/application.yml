@@ -20,6 +20,10 @@ delivery:
     storage-root: ${EIP_DELIVERY_RUNS_DIR:../runtime-logs/delivery-runs}
     max-list-size: 100
 
+workspaces:
+  storage-root: ${EIP_WORKSPACES_DIR:../runtime-logs/workspaces}
+  default-workspace-id: ${EIP_DEFAULT_WORKSPACE_ID:demo-workspace}
+
 project:
   analysis:
     root: ${EIP_PROJECT_ANALYSIS_ROOT:}

@@ -14,6 +14,8 @@ public class OrchestratorRunRequest {
 
     private String runId;
 
+    private String workspaceId = "demo-workspace";
+
     @NotBlank
     private String requirement;
 
@@ -37,6 +39,14 @@ public class OrchestratorRunRequest {
 
     public void setRunId(String runId) {
         this.runId = runId;
+    }
+
+    public String getWorkspaceId() {
+        return workspaceId;
+    }
+
+    public void setWorkspaceId(String workspaceId) {
+        this.workspaceId = workspaceId;
     }
 
     public String getRequirement() {

@@ -9,12 +9,16 @@ import type {
   ProjectInventory,
   ProjectModule,
 } from '../../../api/types/projectAnalysis.types'
+import type { Workspace } from '../../../api/types/workspace.types'
 
 type ProjectIntelligenceWorkspaceProps = {
   inventory: ProjectInventory | null
   brief: ProjectDeliveryBrief | null
   isLoading: boolean
   error: string
+  workspaces: Workspace[]
+  selectedWorkspaceId: string
+  setSelectedWorkspaceId: (workspaceId: string) => void
   reload: () => void
   loadBriefIntoRun: () => void
 }
@@ -27,6 +31,9 @@ export default function ProjectIntelligenceWorkspace({
   brief,
   isLoading,
   error,
+  workspaces,
+  selectedWorkspaceId,
+  setSelectedWorkspaceId,
   reload,
   loadBriefIntoRun,
 }: ProjectIntelligenceWorkspaceProps) {
@@ -48,10 +55,26 @@ export default function ProjectIntelligenceWorkspace({
             <h2 className="text-lg font-semibold text-slate-100">{t('project.title')}</h2>
             <p className="muted mt-1">{t('project.description')}</p>
           </div>
-          <button className="btn-secondary" type="button" onClick={reload} disabled={isLoading}>
-            {isLoading ? t('project.scanning') : t('project.rescan')}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              className="field min-w-56"
+              value={selectedWorkspaceId}
+              onChange={(event) => setSelectedWorkspaceId(event.target.value)}
+            >
+              {workspaces.map((workspace) => (
+                <option key={workspace.workspaceId} value={workspace.workspaceId}>
+                  {workspace.customerName} / {workspace.projectName}
+                </option>
+              ))}
+            </select>
+            <button className="btn-secondary" type="button" onClick={reload} disabled={isLoading}>
+              {isLoading ? t('project.scanning') : t('project.rescan')}
+            </button>
+          </div>
         </div>
+        <p className="mt-3 truncate text-xs text-slate-500">
+          {workspaces.find((workspace) => workspace.workspaceId === selectedWorkspaceId)?.repoRoot ?? selectedWorkspaceId}
+        </p>
         {summary ? (
           <div className="mt-4 grid gap-3 text-sm text-slate-300 sm:grid-cols-2 xl:grid-cols-4">
             <Metric label={t('project.metrics.files')} value={metricValue(summary.scannedFiles)} />

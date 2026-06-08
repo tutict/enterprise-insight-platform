@@ -1,4 +1,5 @@
 export type RunConfig = {
+  workspaceId: string
   model: string
   targetDirectory: string
   verifyCommand: string
@@ -22,6 +23,7 @@ export const splitVerifyCommand = (value: string) =>
 
 export const normalizeRunConfig = (config: RunEngineConfig): RunEngineConfig => ({
   ...config,
+  workspaceId: config.workspaceId.trim(),
   model: config.model.trim(),
   targetDirectory: config.targetDirectory.trim(),
   verifyCommand: config.verifyCommand.trim() || DEFAULT_VERIFY_COMMAND,

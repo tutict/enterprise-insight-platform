@@ -42,6 +42,7 @@ export type AutoRepairGenerationResponse = {
 
 export type OrchestratorRunRequest = {
   runId?: string
+  workspaceId?: string
   requirement: string
   model?: string
   targetDirectory: string

@@ -48,6 +48,9 @@ GATEWAY_ARGS=(
   "--spring.cloud.gateway.routes[6].id=graph-runtime"
   "--spring.cloud.gateway.routes[6].uri=http://localhost:8091"
   "--spring.cloud.gateway.routes[6].predicates[0]=Path=/api/graph/**"
+  "--spring.cloud.gateway.routes[7].id=workspaces"
+  "--spring.cloud.gateway.routes[7].uri=http://localhost:8091"
+  "--spring.cloud.gateway.routes[7].predicates[0]=Path=/api/workspaces/**"
 )
 
 start_service() {

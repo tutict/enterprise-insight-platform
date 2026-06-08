@@ -34,6 +34,9 @@ public class DeliveryRunStore {
         DeliveryRunRecord record = new DeliveryRunRecord();
         Instant now = Instant.now();
         record.setRunId(runId);
+        if (request.getWorkspaceId() != null && !request.getWorkspaceId().isBlank()) {
+            record.setWorkspaceId(request.getWorkspaceId());
+        }
         record.setRequest(request);
         record.setStatus(DeliveryRunStatus.REQUESTED);
         record.setCreatedAt(now);
@@ -59,11 +62,21 @@ public class DeliveryRunStore {
     }
 
     public Optional<DeliveryRunRecord> find(String runId) {
-        Path path = pathFor(runId);
-        if (!Files.exists(path)) {
+        Path legacyPath = legacyPathFor(runId);
+        if (Files.exists(legacyPath)) {
+            return Optional.of(read(legacyPath));
+        }
+        if (!Files.exists(storageRoot)) {
             return Optional.empty();
         }
-        return Optional.of(read(path));
+        try (var stream = Files.walk(storageRoot, 3)) {
+            return stream
+                    .filter(path -> path.getFileName().toString().equals(safeId(runId) + ".json"))
+                    .findFirst()
+                    .map(this::read);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Failed to find delivery run " + runId, ex);
+        }
     }
 
     public List<DeliveryRunRecord> list() {
@@ -71,7 +84,7 @@ public class DeliveryRunStore {
             return List.of();
         }
 
-        try (var stream = Files.list(storageRoot)) {
+        try (var stream = Files.walk(storageRoot, 3)) {
             return stream
                     .filter(path -> path.getFileName().toString().endsWith(".json"))
                     .map(this::read)
@@ -84,6 +97,12 @@ public class DeliveryRunStore {
         } catch (IOException ex) {
             throw new IllegalStateException("Failed to list delivery runs", ex);
         }
+    }
+
+    public List<DeliveryRunRecord> list(String workspaceId) {
+        return list().stream()
+                .filter(record -> workspaceId.equals(record.getWorkspaceId()))
+                .toList();
     }
 
     private DeliveryRunRecord mutate(String runId, DeliveryRunMutation mutation) {
@@ -104,8 +123,9 @@ public class DeliveryRunStore {
 
     private void save(DeliveryRunRecord record) {
         try {
-            Files.createDirectories(storageRoot);
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(pathFor(record.getRunId()).toFile(), record);
+            Path path = pathFor(record);
+            Files.createDirectories(path.getParent());
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), record);
         } catch (IOException ex) {
             throw new IllegalStateException("Failed to persist delivery run " + record.getRunId(), ex);
         }
@@ -119,9 +139,19 @@ public class DeliveryRunStore {
         }
     }
 
-    private Path pathFor(String runId) {
-        String safeRunId = runId.replaceAll("[^a-zA-Z0-9._-]", "_");
-        return storageRoot.resolve(safeRunId + ".json");
+    private Path pathFor(DeliveryRunRecord record) {
+        String workspaceId = record.getWorkspaceId() == null || record.getWorkspaceId().isBlank()
+                ? "demo-workspace"
+                : record.getWorkspaceId();
+        return storageRoot.resolve(safeId(workspaceId)).resolve(safeId(record.getRunId()) + ".json");
+    }
+
+    private Path legacyPathFor(String runId) {
+        return storageRoot.resolve(safeId(runId) + ".json");
+    }
+
+    private String safeId(String value) {
+        return value.replaceAll("[^a-zA-Z0-9._-]", "_");
     }
 
     private DeliveryRunStatus statusForEvent(String eventType, DeliveryRunStatus current) {

@@ -7,6 +7,7 @@ export function startRunExecutionStream(config: RunEngineConfig) {
 
   return startRunStream({
     runId: config.runId,
+    workspaceId: config.workspaceId,
     requirement: config.dsl ?? '',
     model: config.model || undefined,
     targetDirectory: config.targetDirectory,

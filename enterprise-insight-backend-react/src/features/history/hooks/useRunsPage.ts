@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { listDeliveryRuns } from '../../../api/modules/deliveryRuns.api'
+import { exportWorkspaceEvidence, listWorkspaceDeliveryRuns, listWorkspaces } from '../../../api/modules/workspaces.api'
 import type { DeliveryRunRecord } from '../../../api/types/delivery.types'
 import { useNotificationStore } from '../../../store/uiStore'
+import { useWorkspaceStore } from '../../workspace/store/workspaceStore'
 import { normalizeRunEvent, type BackendRunEvent } from '../../run/engine/runSSEAdapter'
 import type { ExecutionPhase, RunEvent, RunRecord, StepState, TimelineStep } from '../../run/model/runEvent'
 import { createInitialExecution, runReducer } from '../../run/store/runStore'
@@ -53,6 +54,7 @@ const normalizeDeliveryRun = (record: DeliveryRunRecord): RunRecord => {
 
   return {
     id: record.runId,
+    workspaceId: record.workspaceId,
     dsl: request?.requirement ?? response?.dsl?.requirement ?? '',
     targetDirectory: request?.targetDirectory ?? response?.generation?.projectRoot ?? '-',
     model: request?.model ?? '',
@@ -85,6 +87,10 @@ export function useRunsPage() {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const pushNotification = useNotificationStore((state) => state.push)
+  const workspaces = useWorkspaceStore((state) => state.workspaces)
+  const selectedWorkspaceId = useWorkspaceStore((state) => state.selectedWorkspaceId)
+  const setWorkspaces = useWorkspaceStore((state) => state.setWorkspaces)
+  const setSelectedWorkspaceId = useWorkspaceStore((state) => state.setSelectedWorkspaceId)
 
   useEffect(() => {
     let cancelled = false
@@ -92,7 +98,12 @@ export function useRunsPage() {
     const loadRuns = async () => {
       setIsLoading(true)
       try {
-        const loaded = await listDeliveryRuns()
+        const loadedWorkspaces = workspaces.length ? workspaces : await listWorkspaces()
+        setWorkspaces(loadedWorkspaces)
+        const workspaceId = loadedWorkspaces.some((workspace) => workspace.workspaceId === selectedWorkspaceId)
+          ? selectedWorkspaceId
+          : loadedWorkspaces[0]?.workspaceId ?? selectedWorkspaceId
+        const loaded = await listWorkspaceDeliveryRuns(workspaceId)
         if (cancelled) {
           return
         }
@@ -118,7 +129,7 @@ export function useRunsPage() {
     return () => {
       cancelled = true
     }
-  }, [pushNotification, t])
+  }, [pushNotification, selectedWorkspaceId, setWorkspaces, t, workspaces])
 
   const runs = useMemo(() => records.map(normalizeDeliveryRun), [records])
 
@@ -146,10 +157,31 @@ export function useRunsPage() {
     })
   }
 
+  const exportEvidence = async (runId: string) => {
+    try {
+      const evidence = await exportWorkspaceEvidence(selectedWorkspaceId, runId)
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: 'success',
+        message: `Evidence exported: ${evidence.markdownPath}`,
+      })
+    } catch (err) {
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: 'error',
+        message: err instanceof Error ? err.message : t('history.loadFailed'),
+      })
+    }
+  }
+
   return {
     runs,
     selectedRun,
     selectRun,
+    exportEvidence: (runId: string) => void exportEvidence(runId),
     isLoading,
+    workspaces,
+    selectedWorkspaceId,
+    setSelectedWorkspaceId,
   }
 }

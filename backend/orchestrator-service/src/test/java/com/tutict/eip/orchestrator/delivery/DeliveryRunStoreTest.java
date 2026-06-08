@@ -28,6 +28,7 @@ class DeliveryRunStoreTest {
         DeliveryRunStore store = new DeliveryRunStore(objectMapper(), properties());
         OrchestratorRunRequest request = new OrchestratorRunRequest();
         request.setRunId("delivery-1");
+        request.setWorkspaceId("customer-a");
         request.setRequirement("Build an API integration prototype");
         request.setTargetDirectory("generated-fde-delivery");
         request.setModel("llama3.1");
@@ -40,11 +41,15 @@ class DeliveryRunStoreTest {
         DeliveryRunRecord record = store.find("delivery-1").orElseThrow();
 
         assertThat(record.getRunId()).isEqualTo("delivery-1");
+        assertThat(record.getWorkspaceId()).isEqualTo("customer-a");
         assertThat(record.getStatus()).isEqualTo(DeliveryRunStatus.COMPLETED);
         assertThat(record.getRequest().getRequirement()).isEqualTo("Build an API integration prototype");
         assertThat(record.getEvents()).extracting(RunEvent::getType).containsExactly("RUN_REQUESTED", "RUN_COMPLETED");
         assertThat(record.getResponse().getGeneration().getStatus()).isEqualTo("VERIFIED");
         assertThat(store.list()).extracting(DeliveryRunRecord::getRunId).containsExactly("delivery-1");
+        assertThat(store.list("customer-a")).extracting(DeliveryRunRecord::getRunId).containsExactly("delivery-1");
+        assertThat(store.list("customer-b")).isEmpty();
+        assertThat(tempDir.resolve("customer-a/delivery-1.json")).exists();
     }
 
     private DeliveryRunStoreProperties properties() {

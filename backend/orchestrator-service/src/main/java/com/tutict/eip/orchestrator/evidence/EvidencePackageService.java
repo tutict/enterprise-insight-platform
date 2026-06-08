@@ -7,6 +7,9 @@ import com.tutict.eip.agentadapter.domain.VerificationResult;
 import com.tutict.eip.orchestrator.delivery.DeliveryRunRecord;
 import com.tutict.eip.orchestrator.delivery.DeliveryRunStore;
 import com.tutict.eip.orchestrator.domain.OrchestratorRunRequest;
+import com.tutict.eip.orchestrator.patchproposal.PatchProposal;
+import com.tutict.eip.orchestrator.patchproposal.PatchProposalFile;
+import com.tutict.eip.orchestrator.patchproposal.PatchProposalService;
 import com.tutict.eip.orchestrator.runtime.RunEvent;
 import com.tutict.eip.orchestrator.workspace.Workspace;
 import com.tutict.eip.orchestrator.workspace.WorkspaceStoreProperties;
@@ -21,15 +24,18 @@ import java.time.Instant;
 public class EvidencePackageService {
 
     private final DeliveryRunStore deliveryRunStore;
+    private final PatchProposalService patchProposalService;
     private final ObjectMapper objectMapper;
     private final Path workspaceRoot;
 
     public EvidencePackageService(
             DeliveryRunStore deliveryRunStore,
+            PatchProposalService patchProposalService,
             ObjectMapper objectMapper,
             WorkspaceStoreProperties properties
     ) {
         this.deliveryRunStore = deliveryRunStore;
+        this.patchProposalService = patchProposalService;
         this.objectMapper = objectMapper;
         this.workspaceRoot = Path.of(properties.getStorageRoot()).toAbsolutePath().normalize();
     }
@@ -39,7 +45,8 @@ public class EvidencePackageService {
                 .filter(run -> workspace.getWorkspaceId().equals(run.getWorkspaceId()))
                 .orElseThrow(() -> new IllegalArgumentException("Delivery run not found in workspace: " + runId));
         Instant exportedAt = Instant.now();
-        String markdown = buildMarkdown(workspace, record, exportedAt);
+        PatchProposal patchProposal = patchProposalService.getOrGenerate(workspace, runId);
+        String markdown = buildMarkdown(workspace, record, patchProposal, exportedAt);
         Path evidenceDir = workspaceRoot
                 .resolve(workspace.getWorkspaceId())
                 .resolve("evidence")
@@ -54,6 +61,7 @@ public class EvidencePackageService {
                 markdown,
                 workspace,
                 record,
+                patchProposal,
                 exportedAt
         );
         try {
@@ -66,7 +74,12 @@ public class EvidencePackageService {
         return evidencePackage;
     }
 
-    private String buildMarkdown(Workspace workspace, DeliveryRunRecord record, Instant exportedAt) {
+    private String buildMarkdown(
+            Workspace workspace,
+            DeliveryRunRecord record,
+            PatchProposal patchProposal,
+            Instant exportedAt
+    ) {
         StringBuilder builder = new StringBuilder();
         OrchestratorRunRequest request = record.getRequest();
         builder.append("# FDE Delivery Evidence\n\n");
@@ -110,6 +123,9 @@ public class EvidencePackageService {
                 : record.getResponse().getGeneration().getFinalVerificationResult();
         appendVerification(builder, verification);
 
+        builder.append("\n## Patch Proposal\n\n");
+        appendPatchProposal(builder, patchProposal);
+
         builder.append("\n## Repair Attempts\n\n");
         if (record.getResponse() == null || record.getResponse().getGeneration() == null
                 || record.getResponse().getGeneration().getAttempts() == null
@@ -134,6 +150,43 @@ public class EvidencePackageService {
         builder.append(output == null || output.isBlank() ? "-" : fence(output));
         builder.append("\n");
         return builder.toString();
+    }
+
+    private void appendPatchProposal(StringBuilder builder, PatchProposal patchProposal) {
+        if (patchProposal == null) {
+            builder.append("- No patch proposal recorded.\n");
+            return;
+        }
+        builder.append("- Status: ").append(patchProposal.getStatus()).append("\n");
+        builder.append("- Changes: ").append(patchProposal.getChangeCount()).append("\n");
+        builder.append("- Rejected Files: ").append(patchProposal.getRejectedCount()).append("\n");
+        builder.append("- Verification Scope: ").append(nullToDash(patchProposal.getVerificationScope())).append("\n");
+        builder.append("- Verification Successful: ")
+                .append(patchProposal.getVerificationSuccessful() == null ? "-" : patchProposal.getVerificationSuccessful())
+                .append("\n");
+        builder.append("- Proposal Path: ").append(nullToDash(patchProposal.getProposalPath())).append("\n\n");
+        if (!patchProposal.getRisks().isEmpty()) {
+            builder.append("Risks:\n\n");
+            for (String risk : patchProposal.getRisks()) {
+                builder.append("- ").append(risk).append("\n");
+            }
+            builder.append("\n");
+        }
+        if (patchProposal.getFiles().isEmpty()) {
+            builder.append("- No files recorded.\n");
+            return;
+        }
+        builder.append("Files:\n\n");
+        for (PatchProposalFile file : patchProposal.getFiles()) {
+            builder.append("- ")
+                    .append(file.getChangeType())
+                    .append(": ")
+                    .append(file.getTargetPath());
+            if (file.getRejectedReason() != null && !file.getRejectedReason().isBlank()) {
+                builder.append(" (").append(file.getRejectedReason()).append(")");
+            }
+            builder.append("\n");
+        }
     }
 
     private void appendVerification(StringBuilder builder, VerificationResult verification) {

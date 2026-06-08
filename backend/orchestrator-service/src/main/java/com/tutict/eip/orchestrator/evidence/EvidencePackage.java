@@ -1,6 +1,7 @@
 package com.tutict.eip.orchestrator.evidence;
 
 import com.tutict.eip.orchestrator.delivery.DeliveryRunRecord;
+import com.tutict.eip.orchestrator.patchproposal.PatchProposal;
 import com.tutict.eip.orchestrator.workspace.Workspace;
 
 import java.time.Instant;
@@ -13,6 +14,7 @@ public record EvidencePackage(
         String markdown,
         Workspace workspace,
         DeliveryRunRecord deliveryRun,
+        PatchProposal patchProposal,
         Instant exportedAt
 ) {
 }

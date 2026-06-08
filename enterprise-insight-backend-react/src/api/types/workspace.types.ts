@@ -1,4 +1,5 @@
 import type { DeliveryRunRecord } from './delivery.types'
+import type { PatchProposal } from './patchProposal.types'
 
 export type Workspace = {
   workspaceId: string
@@ -24,5 +25,6 @@ export type EvidencePackage = {
   markdown: string
   workspace: Workspace
   deliveryRun: DeliveryRunRecord
+  patchProposal: PatchProposal
   exportedAt: string
 }

@@ -2,7 +2,9 @@ package com.tutict.eip.orchestrator.workspace;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.tutict.eip.agentadapter.domain.AutoRepairAttempt;
 import com.tutict.eip.agentadapter.domain.AutoRepairGenerationResponse;
+import com.tutict.eip.agentadapter.domain.GeneratedProjectFile;
 import com.tutict.eip.agentadapter.domain.VerificationCommandResult;
 import com.tutict.eip.agentadapter.domain.VerificationResult;
 import com.tutict.eip.harnesscompiler.domain.DslModel;
@@ -12,6 +14,7 @@ import com.tutict.eip.orchestrator.delivery.DeliveryRunStoreProperties;
 import com.tutict.eip.orchestrator.domain.OrchestratorRunRequest;
 import com.tutict.eip.orchestrator.domain.OrchestratorRunResponse;
 import com.tutict.eip.orchestrator.evidence.EvidencePackageService;
+import com.tutict.eip.orchestrator.patchproposal.PatchProposalService;
 import com.tutict.eip.orchestrator.project.ProjectAnalysisProperties;
 import com.tutict.eip.orchestrator.project.ProjectScannerService;
 import com.tutict.eip.orchestrator.runtime.RunEvent;
@@ -42,6 +45,8 @@ class WorkspaceControllerTest {
     void exportsWorkspaceEvidencePackage() throws Exception {
         Path repoRoot = tempDir.resolve("repo");
         write(repoRoot, "pom.xml", "<project><artifactId>demo</artifactId></project>");
+        Path generatedRoot = tempDir.resolve("generated-fde-delivery");
+        write(generatedRoot, "README.md", "ok");
         write(repoRoot, "src/main/java/com/acme/DemoController.java", """
                 import org.springframework.web.bind.annotation.GetMapping;
                 import org.springframework.web.bind.annotation.RequestMapping;
@@ -80,13 +85,21 @@ class WorkspaceControllerTest {
         runRequest.setVerifyCommands(List.of(List.of("mvn", "test")));
         deliveryRunStore.create("run-1", runRequest);
         deliveryRunStore.appendEvent(RunEvent.of("run-1", "RUN_REQUESTED", null, Map.of("config", runRequest)));
-        deliveryRunStore.appendEvent(RunEvent.of("run-1", "RUN_COMPLETED", null, Map.of("result", response())));
+        deliveryRunStore.appendEvent(RunEvent.of("run-1", "RUN_COMPLETED", null, Map.of("result", response(generatedRoot))));
+
+        PatchProposalService patchProposalService = new PatchProposalService(
+                deliveryRunStore,
+                workspaceRepository,
+                objectMapper,
+                workspaceProperties
+        );
 
         WorkspaceController controller = new WorkspaceController(
                 workspaceRepository,
                 new ProjectScannerService(analysisProperties),
                 deliveryRunStore,
-                new EvidencePackageService(deliveryRunStore, objectMapper, workspaceProperties)
+                new EvidencePackageService(deliveryRunStore, patchProposalService, objectMapper, workspaceProperties),
+                patchProposalService
         );
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 
@@ -100,19 +113,29 @@ class WorkspaceControllerTest {
                 .andExpect(jsonPath("$.data[0].workspaceId").value("customer-a"))
                 .andExpect(jsonPath("$.data[0].runId").value("run-1"));
 
+        mockMvc.perform(get("/api/workspaces/customer-a/delivery-runs/run-1/patch-proposal"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("READY"))
+                .andExpect(jsonPath("$.data.files[0].targetPath").value("README.md"))
+                .andExpect(jsonPath("$.data.files[0].changeType").value("CREATE"));
+
         mockMvc.perform(get("/api/workspaces/customer-a/delivery-runs/run-1/evidence"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.workspaceId").value("customer-a"))
                 .andExpect(jsonPath("$.data.markdown").value(org.hamcrest.Matchers.containsString("# FDE Delivery Evidence")))
-                .andExpect(jsonPath("$.data.markdown").value(org.hamcrest.Matchers.containsString("Build a workspace evidence package")));
+                .andExpect(jsonPath("$.data.markdown").value(org.hamcrest.Matchers.containsString("Build a workspace evidence package")))
+                .andExpect(jsonPath("$.data.markdown").value(org.hamcrest.Matchers.containsString("## Patch Proposal")))
+                .andExpect(jsonPath("$.data.patchProposal.status").value("READY"));
 
         Path evidenceMarkdown = tempDir.resolve("workspaces/customer-a/evidence/run-1/evidence.md");
         Path evidenceJson = tempDir.resolve("workspaces/customer-a/evidence/run-1/evidence.json");
+        Path proposalJson = tempDir.resolve("workspaces/customer-a/patch-proposals/run-1/proposal.json");
         assertThat(evidenceMarkdown).exists();
         assertThat(evidenceJson).exists();
+        assertThat(proposalJson).exists();
     }
 
-    private OrchestratorRunResponse response() {
+    private OrchestratorRunResponse response(Path generatedRoot) {
         DslModel dsl = new DslModel(
                 "workspace-evidence",
                 "spring-boot-backend",
@@ -129,11 +152,22 @@ class WorkspaceControllerTest {
         AutoRepairGenerationResponse generation = new AutoRepairGenerationResponse(
                 true,
                 "VERIFIED",
-                "generated-fde-delivery",
+                generatedRoot.toString(),
                 1,
                 "===FILE START===\nREADME.md\nok\n===FILE END===",
                 verification,
-                List.of()
+                List.of(new AutoRepairAttempt(
+                        1,
+                        true,
+                        "prompt",
+                        "===FILE START===\nREADME.md\nok\n===FILE END===",
+                        List.of(new GeneratedProjectFile(
+                                "README.md",
+                                generatedRoot.resolve("README.md").toString(),
+                                2
+                        )),
+                        verification
+                ))
         );
         return new OrchestratorRunResponse("run-1", dsl, "compiled prompt", generation, Instant.now());
     }

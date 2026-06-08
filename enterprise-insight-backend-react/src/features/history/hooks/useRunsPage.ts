@@ -1,7 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { exportWorkspaceEvidence, listWorkspaceDeliveryRuns, listWorkspaces } from '../../../api/modules/workspaces.api'
+import {
+  exportWorkspaceEvidence,
+  getWorkspacePatchProposal,
+  getWorkspacePatchProposalDiff,
+  listWorkspaceDeliveryRuns,
+  listWorkspaces,
+  regenerateWorkspacePatchProposal,
+} from '../../../api/modules/workspaces.api'
 import type { DeliveryRunRecord } from '../../../api/types/delivery.types'
+import type { PatchProposal, PatchProposalDiff } from '../../../api/types/patchProposal.types'
 import { useNotificationStore } from '../../../store/uiStore'
 import { useWorkspaceStore } from '../../workspace/store/workspaceStore'
 import { normalizeRunEvent, type BackendRunEvent } from '../../run/engine/runSSEAdapter'
@@ -86,6 +94,10 @@ export function useRunsPage() {
   const [records, setRecords] = useState<DeliveryRunRecord[]>([])
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [patchProposal, setPatchProposal] = useState<PatchProposal | null>(null)
+  const [selectedPatchFileId, setSelectedPatchFileId] = useState<string | null>(null)
+  const [patchDiffs, setPatchDiffs] = useState<Record<string, PatchProposalDiff>>({})
+  const [isPatchLoading, setIsPatchLoading] = useState(false)
   const pushNotification = useNotificationStore((state) => state.push)
   const workspaces = useWorkspaceStore((state) => state.workspaces)
   const selectedWorkspaceId = useWorkspaceStore((state) => state.selectedWorkspaceId)
@@ -138,6 +150,88 @@ export function useRunsPage() {
     [runs, selectedRunId],
   )
 
+  useEffect(() => {
+    let cancelled = false
+
+    const loadPatchProposal = async () => {
+      if (!selectedRun) {
+        setPatchProposal(null)
+        setSelectedPatchFileId(null)
+        setPatchDiffs({})
+        return
+      }
+
+      setIsPatchLoading(true)
+      setPatchDiffs({})
+      try {
+        const workspaceId = selectedRun.workspaceId ?? selectedWorkspaceId
+        const proposal = await getWorkspacePatchProposal(workspaceId, selectedRun.id)
+        if (cancelled) {
+          return
+        }
+        setPatchProposal(proposal)
+        const firstDiffable = proposal.files.find((file) => file.diffPath)
+        setSelectedPatchFileId(firstDiffable?.fileId ?? proposal.files[0]?.fileId ?? null)
+      } catch (err) {
+        if (!cancelled) {
+          setPatchProposal(null)
+          setSelectedPatchFileId(null)
+          pushNotification({
+            id: crypto.randomUUID(),
+            type: 'error',
+            message: err instanceof Error ? err.message : t('history.loadFailed'),
+          })
+        }
+      } finally {
+        if (!cancelled) {
+          setIsPatchLoading(false)
+        }
+      }
+    }
+
+    void loadPatchProposal()
+
+    return () => {
+      cancelled = true
+    }
+  }, [pushNotification, selectedRun, selectedWorkspaceId, t])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadDiff = async () => {
+      if (!selectedRun || !patchProposal || !selectedPatchFileId || patchDiffs[selectedPatchFileId]) {
+        return
+      }
+      const selectedFile = patchProposal.files.find((file) => file.fileId === selectedPatchFileId)
+      if (!selectedFile?.diffPath) {
+        return
+      }
+
+      try {
+        const workspaceId = selectedRun.workspaceId ?? selectedWorkspaceId
+        const diff = await getWorkspacePatchProposalDiff(workspaceId, selectedRun.id, selectedPatchFileId)
+        if (!cancelled) {
+          setPatchDiffs((current) => ({ ...current, [selectedPatchFileId]: diff }))
+        }
+      } catch (err) {
+        if (!cancelled) {
+          pushNotification({
+            id: crypto.randomUUID(),
+            type: 'error',
+            message: err instanceof Error ? err.message : t('history.loadFailed'),
+          })
+        }
+      }
+    }
+
+    void loadDiff()
+
+    return () => {
+      cancelled = true
+    }
+  }, [patchDiffs, patchProposal, pushNotification, selectedPatchFileId, selectedRun, selectedWorkspaceId, t])
+
   const selectRun = (id: string) => {
     const run = runs.find((item) => item.id === id)
     if (!run) {
@@ -174,11 +268,45 @@ export function useRunsPage() {
     }
   }
 
+  const regeneratePatchProposal = useCallback(async () => {
+    if (!selectedRun) {
+      return
+    }
+    setIsPatchLoading(true)
+    try {
+      const workspaceId = selectedRun.workspaceId ?? selectedWorkspaceId
+      const proposal = await regenerateWorkspacePatchProposal(workspaceId, selectedRun.id)
+      setPatchProposal(proposal)
+      setPatchDiffs({})
+      const firstDiffable = proposal.files.find((file) => file.diffPath)
+      setSelectedPatchFileId(firstDiffable?.fileId ?? proposal.files[0]?.fileId ?? null)
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: 'success',
+        message: 'Patch proposal regenerated.',
+      })
+    } catch (err) {
+      pushNotification({
+        id: crypto.randomUUID(),
+        type: 'error',
+        message: err instanceof Error ? err.message : t('history.loadFailed'),
+      })
+    } finally {
+      setIsPatchLoading(false)
+    }
+  }, [pushNotification, selectedRun, selectedWorkspaceId, t])
+
   return {
     runs,
     selectedRun,
     selectRun,
     exportEvidence: (runId: string) => void exportEvidence(runId),
+    patchProposal,
+    selectedPatchFileId,
+    selectedPatchDiff: selectedPatchFileId ? patchDiffs[selectedPatchFileId] ?? null : null,
+    selectPatchFile: setSelectedPatchFileId,
+    regeneratePatchProposal: () => void regeneratePatchProposal(),
+    isPatchLoading,
     isLoading,
     workspaces,
     selectedWorkspaceId,

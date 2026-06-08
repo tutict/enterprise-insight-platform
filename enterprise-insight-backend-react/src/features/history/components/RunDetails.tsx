@@ -6,13 +6,30 @@ import ExecutionTimeline from '../../run/components/ExecutionTimeline'
 import FlowCanvas from '../../run/components/flow/FlowCanvas'
 import { createWorkflowGraph } from '../../run/hooks/useFlowData'
 import type { RunRecord } from '../../run/model/runEvent'
+import type { PatchProposal, PatchProposalDiff } from '../../../api/types/patchProposal.types'
+import PatchProposalPanel from './PatchProposalPanel'
 
 type RunDetailsProps = {
   run: RunRecord | null
   exportEvidence: (id: string) => void
+  patchProposal: PatchProposal | null
+  selectedPatchFileId: string | null
+  selectedPatchDiff: PatchProposalDiff | null
+  selectPatchFile: (fileId: string) => void
+  regeneratePatchProposal: () => void
+  isPatchLoading: boolean
 }
 
-export default function RunDetails({ run, exportEvidence }: RunDetailsProps) {
+export default function RunDetails({
+  run,
+  exportEvidence,
+  patchProposal,
+  selectedPatchFileId,
+  selectedPatchDiff,
+  selectPatchFile,
+  regeneratePatchProposal,
+  isPatchLoading,
+}: RunDetailsProps) {
   const { t } = useTranslation(['run', 'dsl'])
   const workflow = useMemo(() => {
     if (!run) {
@@ -42,6 +59,14 @@ export default function RunDetails({ run, exportEvidence }: RunDetailsProps) {
             <FlowCanvas nodes={workflow.nodes} edges={workflow.edges} />
           </div>
           <ExecutionTimeline steps={run.steps} />
+          <PatchProposalPanel
+            proposal={patchProposal}
+            selectedFileId={selectedPatchFileId}
+            selectedDiff={selectedPatchDiff}
+            isLoading={isPatchLoading}
+            onSelectFile={selectPatchFile}
+            onRegenerate={regeneratePatchProposal}
+          />
           {run.response ? (
             <div className="panel p-5">
               <h3 className="mb-3 text-sm font-semibold text-slate-100">{t('history.generatedOutput')}</h3>

@@ -8,6 +8,9 @@ import com.tutict.eip.harnesscompiler.domain.CompileResponse;
 import com.tutict.eip.harnesscompiler.service.CompileService;
 import com.tutict.eip.orchestrator.domain.OrchestratorRunRequest;
 import com.tutict.eip.orchestrator.domain.OrchestratorRunResponse;
+import com.tutict.eip.orchestrator.patchproposal.PatchProposalService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,18 +22,23 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class RunExecutionEngine {
 
+    private static final Logger log = LoggerFactory.getLogger(RunExecutionEngine.class);
+
     private final CompileService compileService;
     private final AutoRepairGenerationService autoRepairGenerationService;
     private final RunEventStreamService streamService;
+    private final PatchProposalService patchProposalService;
 
     public RunExecutionEngine(
             CompileService compileService,
             AutoRepairGenerationService autoRepairGenerationService,
-            RunEventStreamService streamService
+            RunEventStreamService streamService,
+            PatchProposalService patchProposalService
     ) {
         this.compileService = compileService;
         this.autoRepairGenerationService = autoRepairGenerationService;
         this.streamService = streamService;
+        this.patchProposalService = patchProposalService;
     }
 
     public void executeAsync(String runId, OrchestratorRunRequest request) {
@@ -81,6 +89,7 @@ public class RunExecutionEngine {
 
             if (generation.isSuccessful()) {
                 streamService.emit(RunEvent.of(runId, "RUN_COMPLETED", null, payload("result", response)));
+                generatePatchProposal(runId);
             } else {
                 streamService.emit(RunEvent.of(runId, "RUN_FAILED", null, payload(
                         "error", "Run finished with status: " + generation.getStatus(),
@@ -94,6 +103,14 @@ public class RunExecutionEngine {
                 streamService.emit(RunEvent.of(runId, "STEP_FAILED", currentStep, payload("error", ex.getMessage())));
             }
             streamService.emit(RunEvent.of(runId, "RUN_FAILED", null, payload("error", ex.getMessage())));
+        }
+    }
+
+    private void generatePatchProposal(String runId) {
+        try {
+            patchProposalService.regenerateForRun(runId);
+        } catch (RuntimeException ex) {
+            log.warn("Patch proposal generation failed after delivery run completed runId={}", runId, ex);
         }
     }
 

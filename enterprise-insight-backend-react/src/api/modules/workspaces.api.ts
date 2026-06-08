@@ -1,5 +1,6 @@
 import { apiRequest } from '../client'
 import type { DeliveryRunRecord } from '../types/delivery.types'
+import type { PatchProposal, PatchProposalDiff } from '../types/patchProposal.types'
 import type { ProjectDeliveryBrief, ProjectInventory } from '../types/projectAnalysis.types'
 import type { EvidencePackage, Workspace } from '../types/workspace.types'
 
@@ -25,5 +26,27 @@ export function listWorkspaceDeliveryRuns(workspaceId: string) {
 export function exportWorkspaceEvidence(workspaceId: string, runId: string) {
   return apiRequest<EvidencePackage>(
     workspacePath(workspaceId, `/delivery-runs/${encodeURIComponent(runId)}/evidence`),
+  )
+}
+
+export function getWorkspacePatchProposal(workspaceId: string, runId: string) {
+  return apiRequest<PatchProposal>(
+    workspacePath(workspaceId, `/delivery-runs/${encodeURIComponent(runId)}/patch-proposal`),
+  )
+}
+
+export function regenerateWorkspacePatchProposal(workspaceId: string, runId: string) {
+  return apiRequest<PatchProposal>(
+    workspacePath(workspaceId, `/delivery-runs/${encodeURIComponent(runId)}/patch-proposal/regenerate`),
+    { method: 'POST' },
+  )
+}
+
+export function getWorkspacePatchProposalDiff(workspaceId: string, runId: string, fileId: string) {
+  return apiRequest<PatchProposalDiff>(
+    workspacePath(
+      workspaceId,
+      `/delivery-runs/${encodeURIComponent(runId)}/patch-proposal/files/${encodeURIComponent(fileId)}/diff`,
+    ),
   )
 }

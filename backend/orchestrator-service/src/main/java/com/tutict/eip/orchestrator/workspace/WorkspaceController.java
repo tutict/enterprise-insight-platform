@@ -5,6 +5,9 @@ import com.tutict.eip.orchestrator.delivery.DeliveryRunRecord;
 import com.tutict.eip.orchestrator.delivery.DeliveryRunStore;
 import com.tutict.eip.orchestrator.evidence.EvidencePackage;
 import com.tutict.eip.orchestrator.evidence.EvidencePackageService;
+import com.tutict.eip.orchestrator.patchproposal.PatchProposal;
+import com.tutict.eip.orchestrator.patchproposal.PatchProposalDiff;
+import com.tutict.eip.orchestrator.patchproposal.PatchProposalService;
 import com.tutict.eip.orchestrator.project.ProjectDeliveryBrief;
 import com.tutict.eip.orchestrator.project.ProjectInventory;
 import com.tutict.eip.orchestrator.project.ProjectScannerService;
@@ -26,17 +29,20 @@ public class WorkspaceController {
     private final ProjectScannerService projectScannerService;
     private final DeliveryRunStore deliveryRunStore;
     private final EvidencePackageService evidencePackageService;
+    private final PatchProposalService patchProposalService;
 
     public WorkspaceController(
             WorkspaceRepository workspaceRepository,
             ProjectScannerService projectScannerService,
             DeliveryRunStore deliveryRunStore,
-            EvidencePackageService evidencePackageService
+            EvidencePackageService evidencePackageService,
+            PatchProposalService patchProposalService
     ) {
         this.workspaceRepository = workspaceRepository;
         this.projectScannerService = projectScannerService;
         this.deliveryRunStore = deliveryRunStore;
         this.evidencePackageService = evidencePackageService;
+        this.patchProposalService = patchProposalService;
     }
 
     @GetMapping
@@ -75,6 +81,31 @@ public class WorkspaceController {
             @PathVariable("runId") String runId
     ) {
         return ApiResponse.ok("evidence package exported", evidencePackageService.export(workspace(workspaceId), runId));
+    }
+
+    @GetMapping("/{workspaceId}/delivery-runs/{runId}/patch-proposal")
+    public ApiResponse<PatchProposal> patchProposal(
+            @PathVariable("workspaceId") String workspaceId,
+            @PathVariable("runId") String runId
+    ) {
+        return ApiResponse.ok("patch proposal loaded", patchProposalService.getOrGenerate(workspace(workspaceId), runId));
+    }
+
+    @PostMapping("/{workspaceId}/delivery-runs/{runId}/patch-proposal/regenerate")
+    public ApiResponse<PatchProposal> regeneratePatchProposal(
+            @PathVariable("workspaceId") String workspaceId,
+            @PathVariable("runId") String runId
+    ) {
+        return ApiResponse.ok("patch proposal regenerated", patchProposalService.regenerate(workspace(workspaceId), runId));
+    }
+
+    @GetMapping("/{workspaceId}/delivery-runs/{runId}/patch-proposal/files/{fileId}/diff")
+    public ApiResponse<PatchProposalDiff> patchProposalDiff(
+            @PathVariable("workspaceId") String workspaceId,
+            @PathVariable("runId") String runId,
+            @PathVariable("fileId") String fileId
+    ) {
+        return ApiResponse.ok("patch proposal diff loaded", patchProposalService.readDiff(workspace(workspaceId), runId, fileId));
     }
 
     private Workspace workspace(String workspaceId) {

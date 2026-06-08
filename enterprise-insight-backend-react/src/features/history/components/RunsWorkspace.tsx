@@ -1,4 +1,5 @@
 import type { Workspace } from '../../../api/types/workspace.types'
+import type { PatchProposal, PatchProposalDiff } from '../../../api/types/patchProposal.types'
 import type { RunRecord } from '../../run/model/runEvent'
 import RunDetails from './RunDetails'
 import RunList from './RunList'
@@ -8,6 +9,12 @@ type RunsWorkspaceProps = {
   selectedRun: RunRecord | null
   selectRun: (id: string) => void
   exportEvidence: (id: string) => void
+  patchProposal: PatchProposal | null
+  selectedPatchFileId: string | null
+  selectedPatchDiff: PatchProposalDiff | null
+  selectPatchFile: (fileId: string) => void
+  regeneratePatchProposal: () => void
+  isPatchLoading: boolean
   isLoading?: boolean
   workspaces: Workspace[]
   selectedWorkspaceId: string
@@ -19,6 +26,12 @@ export default function RunsWorkspace({
   selectedRun,
   selectRun,
   exportEvidence,
+  patchProposal,
+  selectedPatchFileId,
+  selectedPatchDiff,
+  selectPatchFile,
+  regeneratePatchProposal,
+  isPatchLoading,
   isLoading = false,
   workspaces,
   selectedWorkspaceId,
@@ -45,7 +58,16 @@ export default function RunsWorkspace({
       </section>
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(380px,1fr)]">
         <RunList runs={runs} selectedRunId={selectedRun?.id ?? null} onSelectRun={selectRun} isLoading={isLoading} />
-        <RunDetails run={selectedRun} exportEvidence={exportEvidence} />
+        <RunDetails
+          run={selectedRun}
+          exportEvidence={exportEvidence}
+          patchProposal={patchProposal}
+          selectedPatchFileId={selectedPatchFileId}
+          selectedPatchDiff={selectedPatchDiff}
+          selectPatchFile={selectPatchFile}
+          regeneratePatchProposal={regeneratePatchProposal}
+          isPatchLoading={isPatchLoading}
+        />
       </div>
     </div>
   )
